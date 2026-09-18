@@ -1,0 +1,34 @@
+[package]
+name = "sorobench"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90.0"
+description = "Replay the solc semantic test suite against solang's Soroban target, using the frozen EVM `// ----` values as an oracle."
+license = "Apache-2.0"
+
+[[bin]]
+name = "sorobench"
+path = "src/main.rs"
+
+[features]
+default = ["harness"]
+decoder = ["dep:alloy-dyn-abi", "dep:alloy-primitives", "dep:soroban-sdk"]
+# `serde`/`serde_json` power the `FileReport` wire format that `run-one` emits and
+# `run-all` reads back — both already live in solang's tree, so the harness build
+# pulls nothing new. The default (LLVM-free) build stays dependency-free.
+harness = ["decoder", "dep:solang", "dep:solang-parser", "dep:serde", "dep:serde_json"]
+
+[dependencies]
+# NOTE: version pinned for real when Phase 2 starts; unbuilt at Phase 0.
+alloy-dyn-abi = { version = "0.8", optional = true }
+alloy-primitives = { version = "0.8", optional = true }
+
+# solang = { git = "https://github.com/Islam-Imad/solang", rev = "6bcee2ee2b6ecedf818637c021a8919fa3d1dd87", features = ["soroban"], optional = true }
+# solang-parser = { git = "https://github.com/Islam-Imad/solang", rev = "6bcee2ee2b6ecedf818637c021a8919fa3d1dd87", optional = true }
+solang = { git = "https://github.com/Islam-Imad/solang", rev = "e6289eb708d5cfbe07782dadb9c41c23ba6facfa", features = ["soroban"], optional = true }
+solang-parser = { git = "https://github.com/Islam-Imad/solang", rev = "e6289eb708d5cfbe07782dadb9c41c23ba6facfa", optional = true }
+
+soroban-sdk = { version = "23.0.0-rc.2.2", features = ["testutils"], optional = true }
+
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
