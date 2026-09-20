@@ -1,6 +1,5 @@
-// from solc semanticTests: structs/copy_struct_with_nested_array_from_memory_to_memory.sol
-// a struct param S{uint8[1], uint8[]} hand-encoded as ABI words -> exercises
-// struct-argument decoding (Symbol-keyed Map at the ABI boundary) + struct return.
+// PASS (2 calls). Takes a struct, returns a default (empty) struct.
+// Shows a struct arg decodes and a struct return compares correctly.
 pragma abicoder v2;
 
 contract C {

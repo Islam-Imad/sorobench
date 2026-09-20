@@ -9,7 +9,7 @@ use solang_parser::diagnostics::Level;
 
 // A successful Soroban compile.
 pub struct Compiled {
-    // wasm of the first instantiable contract.
+    // wasm of the contract under test (the last instantiable one, per solc).
     pub wasm: Vec<u8>,
     // Every instantiable contract's wasm.
     pub all_wasm: Vec<Vec<u8>>,
@@ -69,12 +69,18 @@ pub fn compile_soroban(src: &str) -> Result<Compiled, CompileError> {
         return Err(CompileError { messages, ns });
     }
 
+    // solc's convention: the LAST contract in the file is the one under test.
+    // `results` are emitted in `ns.contracts` order (one per instantiable
+    // contract), so the last result is the last instantiable contract's wasm.
     let all_wasm: Vec<Vec<u8>> = results.into_iter().map(|(w, _)| w).collect();
-    let wasm = all_wasm[0].clone();
+    let wasm = all_wasm
+        .last()
+        .expect("results non-empty ⇒ at least one wasm")
+        .clone();
     let main_contract = ns
         .contracts
         .iter()
-        .position(|c| c.instantiable)
+        .rposition(|c| c.instantiable)
         .expect("results non-empty ⇒ an instantiable contract exists");
     Ok(Compiled {
         wasm,

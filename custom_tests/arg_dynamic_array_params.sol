@@ -1,7 +1,5 @@
-// from solc semanticTests: array/slices/array_calldata_assignment.sol
-// 3 params (two dynamic uint256[] + a scalar) hand-encoded as 8 ABI arg words:
-// the arg-word count is NOT the arity. Regression for name-based resolution +
-// decode-based parameter matching.
+// PASS. 3 params (two uint256[] + a uint256) passed as 8 ABI arg words.
+// Shows the runner resolves f by name, not by arg-word count.
 contract C {
     function f(uint256[] calldata x, uint256[] calldata y, uint256 i) external returns (uint256) {
         x = y;

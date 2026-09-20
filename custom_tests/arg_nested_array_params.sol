@@ -1,6 +1,5 @@
-// from solc semanticTests: array/copying/nested_array_element_memory_to_memory.sol
-// multi-dimensional array params (uint8[][][], uint8[][1][], uint32[2][], ...)
-// hand-encoded across many ABI words; each returns a single nested array.
+// PASS (6 calls). Multi-dimensional array params in and out.
+// Shows nested arrays decode and compare correctly.
 pragma abicoder v2;
 
 contract C {
