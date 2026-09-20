@@ -20,7 +20,6 @@ pub struct Compiled {
 }
 
 pub struct CompileError {
-    // Error-level diagnostic messages (warnings excluded).
     pub messages: Vec<String>,
     pub ns: Namespace,
 }

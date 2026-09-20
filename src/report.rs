@@ -212,17 +212,11 @@ impl FileReport {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Aggregation — pure over &[FileReport], so the driver stays a thin shell.
-// ---------------------------------------------------------------------------
-
 /// A rollup of one group of files (the whole corpus, or one sub-directory).
 #[derive(Debug, Clone, Default)]
 pub struct Rollup {
     pub files: usize,
-    /// Per-bucket file counts.
     pub buckets: std::collections::BTreeMap<&'static str, usize>,
-    /// Call-level tallies across `Ran` files.
     pub calls_pass: usize,
     pub calls_fail: usize,
     pub calls_other: usize,

@@ -49,9 +49,6 @@ fn list_tests(cli_root: Option<&str>) -> ExitCode {
     }
 }
 
-/// `sorobench parse [FILE|DIR]` — parse the `// ----` blocks. A single `.sol`
-/// file prints its parsed calls; a directory (default: the corpus) prints a
-/// coverage report.
 fn parse_cmd(arg: Option<&str>) -> ExitCode {
     let builtins = expectation::semantic_test_builtins();
     if let Some(a) = arg {
@@ -217,9 +214,6 @@ fn parse_one_verbose(path: &Path, builtins: &Builtins) -> ExitCode {
     }
 }
 
-/// `sorobench run <FILE.sol>` — parse, compile, invoke, then decode both the
-/// expected and actual values and compare them, printing one verdict per
-/// `// ----` call. Requires the `harness` feature (LLVM16 toolchain).
 #[cfg(feature = "harness")]
 fn run_cmd(arg: Option<&str>) -> ExitCode {
     // Default target = the custom_tests/ focus directory.
@@ -326,16 +320,6 @@ fn run_cmd(_arg: Option<&str>) -> ExitCode {
     ExitCode::FAILURE
 }
 
-/// `sorobench run-one <FILE.sol>` — run ONE test file and print exactly one JSON
-/// [`FileReport`] on stdout (a machine-readable record per test). The corpus
-/// driver (`run-all`) spawns this **in its own process**, so if solang crashes
-/// (an uncatchable abort, LLVM assert, or stack overflow) only this child dies,
-/// never the whole batch.
-///
-/// The record always goes to stdout and the process exits 0 for every *handled*
-/// outcome (a compile-fail or a mismatch is data, not a driver error). A non-zero
-/// exit or a fatal signal therefore unambiguously means the child itself died,
-/// which `run-all` buckets as `CRASH`.
 #[cfg(feature = "harness")]
 fn run_one_json(arg: Option<&str>) -> ExitCode {
     use sorobench::harness::run_source;
@@ -370,13 +354,6 @@ fn run_one_json(arg: Option<&str>) -> ExitCode {
     }
 }
 
-/// `sorobench run-all [CORPUS_DIR]` — the full-suite driver. Spawns
-/// `sorobench run-one` per test in its own process (crash isolation), reads each
-/// child's [`FileReport`] back, synthesizes `CRASH`/`TIMEOUT` reports for children
-/// that died, then writes `report/results.jsonl` (machine, one record per test)
-/// + `report/summary.md` (human) and prints a bucket summary.
-///
-/// Per-test timeout is `$SOROBENCH_TIMEOUT` seconds (default 60).
 #[cfg(feature = "harness")]
 fn run_all(arg: Option<&str>) -> ExitCode {
     use sorobench::harness::{run_isolated_timeout, Exit};

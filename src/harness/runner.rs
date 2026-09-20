@@ -9,7 +9,7 @@ use crate::testfile;
 
 use super::compile::{compile_soroban, Compiled};
 use super::env::{Outcome, SorobanEnv};
-use super::typemap::{resolve_constructor, resolve_fn, MappedType, ResolvedFn};
+use super::typemap::{resolve_constructor, resolve_overloads, MappedType, ResolvedFn};
 
 #[derive(Debug)]
 pub enum Verdict {
@@ -77,8 +77,7 @@ pub enum RunReport {
     NoExpectations,
     // solang could not compile the source, or panicked while compiling.
     CompileFailed(String),
-    // A whole-file limitation of the runner (e.g. a constructor that needs
-    // args, which isn't supported yet). Not a solang bug.
+    // the tool cannot handle yet.
     Unsupported(String),
     // Per-call verdicts.
     Ran(Vec<CallVerdict>),
@@ -178,13 +177,33 @@ fn run_call(
         .next()
         .unwrap_or(&call.signature)
         .to_string();
-    let arity = call.arguments.parameters.len();
-    let resolved = match resolve_fn(ns, contract_no, &bare, arity) {
-        Ok(r) => r,
+
+    let candidates = match resolve_overloads(ns, contract_no, &bare) {
+        Ok(c) => c,
         Err(e) => return Verdict::Unsupported(e),
     };
 
-    let args = match build_args(h, call, &resolved) {
+    let buf = bytes_utils::encode_params(&call.arguments.parameters);
+    let mut hits: Vec<(ResolvedFn, Vec<NativeValue>)> = candidates
+        .into_iter()
+        .filter_map(|c| {
+            decode_arg_words(&c.params, &buf)
+                .ok()
+                .map(|items| (c, items))
+        })
+        .collect();
+    let (resolved, items) = match hits.len() {
+        0 => {
+            return Verdict::Unsupported(format!(
+                "`{bare}`: {} arg word(s) match no overload's parameters",
+                call.arguments.parameters.len()
+            ))
+        }
+        1 => hits.pop().unwrap(),
+        _ => return Verdict::Unsupported(format!("ambiguous overload `{bare}` for decoded args")),
+    };
+
+    let args = match args_to_vals(h.env(), &resolved.params, &items) {
         Ok(a) => a,
         Err(e) => return Verdict::Unsupported(e),
     };
@@ -198,25 +217,16 @@ fn tuple_abi(types: &[MappedType]) -> String {
     format!("({})", inner.join(","))
 }
 
-fn build_args(
-    h: &SorobanEnv,
-    call: &FunctionCall,
-    resolved: &ResolvedFn,
-) -> Result<Vec<Val>, String> {
-    encode_args(h.env(), &resolved.params, &call.arguments.parameters)
-}
-
-fn encode_args(
-    env: &Env,
-    params: &[MappedType],
-    parameters: &[Parameter],
-) -> Result<Vec<Val>, String> {
+fn decode_arg_words(params: &[MappedType], buf: &[u8]) -> Result<Vec<NativeValue>, String> {
     if params.is_empty() {
-        return Ok(Vec::new());
+        return if buf.is_empty() {
+            Ok(Vec::new())
+        } else {
+            Err("no-arg signature but arg words present".into())
+        };
     }
-    let buf = bytes_utils::encode_params(parameters);
     let decoded =
-        abi::abi_decode_params(&buf, &tuple_abi(params)).map_err(|e| format!("arg decode: {e}"))?;
+        abi::abi_decode_params(buf, &tuple_abi(params)).map_err(|e| format!("arg decode: {e}"))?;
     let NativeValue::Tuple(items) = decoded else {
         return Err("arg decode did not yield a tuple".into());
     };
@@ -227,6 +237,14 @@ fn encode_args(
             params.len()
         ));
     }
+    Ok(items)
+}
+
+fn args_to_vals(
+    env: &Env,
+    params: &[MappedType],
+    items: &[NativeValue],
+) -> Result<Vec<Val>, String> {
     let mut vals = Vec::with_capacity(items.len());
     for (nv, p) in items.iter().zip(params) {
         if p.soroban == SorobanType::Address {
@@ -235,6 +253,16 @@ fn encode_args(
         vals.push(to_val(env, nv, &p.soroban));
     }
     Ok(vals)
+}
+
+fn encode_args(
+    env: &Env,
+    params: &[MappedType],
+    parameters: &[Parameter],
+) -> Result<Vec<Val>, String> {
+    let buf = bytes_utils::encode_params(parameters);
+    let items = decode_arg_words(params, &buf)?;
+    args_to_vals(env, params, &items)
 }
 
 fn compare(
