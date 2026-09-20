@@ -110,21 +110,22 @@ Two checks keep a decoder bug apart from a real solang bug:
 ## Current results
 
 From the last full corpus run (`report/summary.md`, solc **v0.8.22**, 1503 tests,
-60s per test):
+60s per test), against solang at
+[`e6289eb`](https://github.com/Islam-Imad/solang/commit/e6289eb708d5cfbe07782dadb9c41c23ba6facfa):
 
-**Headline:** of the **402** files that compiled and ran, **309 (76.9%)** had no
-failed check; **93** showed a likely solang-on-Soroban bug (mismatch or trap).
-Across those files, call by call: **1210 pass**, **250 fail**, 468 other (skipped
+**Headline:** of the **479** files that compiled and ran, **367 (76.6%)** had no
+failed check; **112** showed a likely solang-on-Soroban bug (mismatch or trap).
+Across those files, call by call: **1375 pass**, **292 fail**, 261 other (skipped
 / nofaithful / unsupported).
 
 File-level buckets:
 
 | bucket | files | % | meaning |
 |---|---:|---:|---|
-| `PASS_ALL` | 274 | 18.2% | every checked call passed |
-| `PASS_SOME` | 35 | 2.3% | passed, some calls skipped |
-| `HAS_FAIL` | 93 | 6.2% | a checked mismatch/trap: a real bug |
-| `ONLY_OTHER` | 129 | 8.6% | nothing checkable ran |
+| `PASS_ALL` | 328 | 21.8% | every checked call passed |
+| `PASS_SOME` | 39 | 2.6% | passed, some calls skipped |
+| `HAS_FAIL` | 112 | 7.5% | a checked mismatch/trap: a real bug |
+| `ONLY_OTHER` | 52 | 3.5% | nothing checkable ran |
 | `COMPILE_FAIL` | 890 | 59.2% | solang could not compile it, or errored |
 | `CRASH` | 45 | 3.0% | uncatchable abort (caught by isolation) |
 | `NO_BLOCK` | 27 | 1.8% | no `// ----` expectations |

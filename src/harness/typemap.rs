@@ -71,30 +71,39 @@ pub struct ResolvedFn {
     pub returns: Vec<MappedType>,
 }
 
-pub fn resolve_fn(
+pub fn resolve_overloads(
     ns: &Namespace,
     contract_no: usize,
     bare_name: &str,
-    arity: usize,
-) -> Result<ResolvedFn, String> {
+) -> Result<Vec<ResolvedFn>, String> {
     let contract = &ns.contracts[contract_no];
     let matches: Vec<usize> = contract
         .functions
         .iter()
         .copied()
-        .filter(|&fno| {
-            let f = &ns.functions[fno];
-            f.id.name == bare_name && f.params.len() == arity
-        })
+        .filter(|&fno| ns.functions[fno].id.name == bare_name)
         .collect();
 
-    match matches.len() {
-        0 => return Err(format!("no function `{bare_name}` with {arity} arg(s)")),
-        1 => {}
-        _ => return Err(format!("ambiguous `{bare_name}` with {arity} arg(s)")),
+    if matches.is_empty() {
+        return Err(format!("no function `{bare_name}`"));
     }
 
-    let f = &ns.functions[matches[0]];
+    let mut resolved = Vec::new();
+    let mut last_err = None;
+    for fno in matches {
+        match build_resolved(ns, contract_no, fno) {
+            Ok(r) => resolved.push(r),
+            Err(e) => last_err = Some(e),
+        }
+    }
+    if resolved.is_empty() {
+        return Err(last_err.unwrap_or_else(|| format!("no mappable `{bare_name}`")));
+    }
+    Ok(resolved)
+}
+
+fn build_resolved(ns: &Namespace, contract_no: usize, fno: usize) -> Result<ResolvedFn, String> {
+    let f = &ns.functions[fno];
 
     let export_name = if f.mangled_name_contracts.contains(&contract_no) {
         f.mangled_name.clone()
