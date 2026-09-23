@@ -12,6 +12,7 @@ fn main() -> ExitCode {
         Some("parse") => parse_cmd(args.get(2).map(String::as_str)),
         Some("run") => run_cmd(args.get(2).map(String::as_str)),
         Some("run-one") => run_one_json(args.get(2).map(String::as_str)),
+        Some("exec-one") => exec_one_json(args.get(2).map(String::as_str)),
         Some("run-all") => run_all(args.get(2).map(String::as_str)),
         Some("-h") | Some("--help") | Some("help") => {
             usage(&mut std::io::stdout().lock());
@@ -216,8 +217,18 @@ fn parse_one_verbose(path: &Path, builtins: &Builtins) -> ExitCode {
 
 #[cfg(feature = "harness")]
 fn run_cmd(arg: Option<&str>) -> ExitCode {
+    use sorobench::harness::TIMEOUT;
+
     // Default target = the custom_tests/ focus directory.
     let target = PathBuf::from(arg.unwrap_or("custom_tests"));
+
+    let exe = match own_exe() {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("error: cannot find own executable to isolate tests: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
 
     if target.is_dir() {
         let files = match corpus::enumerate(&target) {
@@ -233,11 +244,15 @@ fn run_cmd(arg: Option<&str>) -> ExitCode {
         }
         let (mut pass, mut fail, mut other) = (0, 0, 0);
         for path in &files {
-            println!(
-                "===== {} =====",
-                path.strip_prefix(&target).unwrap_or(path).display()
-            );
-            let (p, f, o) = run_one(path);
+            let rel = path
+                .strip_prefix(&target)
+                .unwrap_or(path)
+                .display()
+                .to_string();
+            println!("===== {rel} =====");
+            let abs = path.to_string_lossy().into_owned();
+            let report = isolate_one(&exe, &abs, rel, TIMEOUT);
+            let (p, f, o) = print_file_report(&report);
             pass += p;
             fail += f;
             other += o;
@@ -249,7 +264,9 @@ fn run_cmd(arg: Option<&str>) -> ExitCode {
         );
         ExitCode::SUCCESS
     } else if target.is_file() {
-        run_one(&target);
+        let abs = target.to_string_lossy().into_owned();
+        let report = isolate_one(&exe, &abs, abs.clone(), TIMEOUT);
+        print_file_report(&report);
         ExitCode::SUCCESS
     } else {
         eprintln!(
@@ -261,55 +278,123 @@ fn run_cmd(arg: Option<&str>) -> ExitCode {
     }
 }
 
-/// Run one `.sol` file, print its report, and return (pass, fail, other) counts.
+/// The corpus-relative path to the current executable, for spawning `exec-one`.
 #[cfg(feature = "harness")]
-fn run_one(path: &Path) -> (usize, usize, usize) {
-    use sorobench::harness::{run_source, RunReport};
+fn own_exe() -> std::io::Result<String> {
+    Ok(std::env::current_exe()?.to_string_lossy().into_owned())
+}
 
-    let text = match std::fs::read_to_string(path) {
-        Ok(s) => s,
+/// Run one `.sol` file in an isolated subprocess (`exec-one`) under `timeout`,
+/// and fold the outcome — success, timeout, crash — into a single [`FileReport`].
+/// This is the one isolation path shared by `run`, `run-one`, and `run-all`.
+#[cfg(feature = "harness")]
+fn isolate_one(
+    exe: &str,
+    abs: &str,
+    rel: String,
+    timeout: std::time::Duration,
+) -> sorobench::report::FileReport {
+    use sorobench::harness::{run_isolated_timeout, Exit};
+    use sorobench::report::{Bucket, FileReport, ReportKind};
+
+    let timeout_secs = timeout.as_secs();
+    let iso = match run_isolated_timeout(exe, ["exec-one", abs], timeout) {
+        Ok(iso) => iso,
         Err(e) => {
-            println!("  READ-ERROR: {e}");
-            return (0, 0, 1);
+            return FileReport::synthetic(
+                rel,
+                ReportKind::Crashed,
+                Bucket::Crash,
+                format!("spawn failed: {e}"),
+            )
         }
     };
-    match run_source(&text) {
-        RunReport::FrontendError(e) => {
-            println!("  FRONTEND-ERROR: {e}");
+
+    match iso.exit {
+        Exit::Code(0) => match serde_json::from_str::<FileReport>(iso.stdout.trim()) {
+            Ok(mut r) => {
+                r.path = rel;
+                r
+            }
+            Err(e) => FileReport::synthetic(
+                rel,
+                ReportKind::Crashed,
+                Bucket::Crash,
+                format!("exec-one produced no valid record: {e}"),
+            ),
+        },
+        Exit::Timeout => FileReport::synthetic(
+            rel,
+            ReportKind::TimedOut,
+            Bucket::Timeout,
+            format!("exceeded {timeout_secs}s"),
+        ),
+        Exit::Signal(sig) => FileReport::synthetic(
+            rel,
+            ReportKind::Crashed,
+            Bucket::Crash,
+            format!("killed by signal {sig}"),
+        ),
+        Exit::Code(n) => FileReport::synthetic(
+            rel,
+            ReportKind::Crashed,
+            Bucket::Crash,
+            format!("exec-one exited {n} without a record"),
+        ),
+        Exit::Unknown => FileReport::synthetic(
+            rel,
+            ReportKind::Crashed,
+            Bucket::Crash,
+            "exec-one ended in an unknown state".into(),
+        ),
+    }
+}
+
+/// Pretty-print one [`FileReport`] and return its (pass, fail, other) tally.
+/// Non-`Ran` outcomes count as a single "other" so the `run` totals stay honest.
+#[cfg(feature = "harness")]
+fn print_file_report(r: &sorobench::report::FileReport) -> (usize, usize, usize) {
+    use sorobench::report::ReportKind;
+
+    match r.report {
+        ReportKind::FrontendError => {
+            println!("  FRONTEND-ERROR: {}", r.detail);
             (0, 0, 1)
         }
-        RunReport::NoExpectations => {
+        ReportKind::NoExpectations => {
             println!("  (no // ---- block)");
             (0, 0, 1)
         }
-        RunReport::CompileFailed(e) => {
-            println!("  COMPILE-FAILED: {e}");
+        ReportKind::CompileFailed => {
+            println!("  COMPILE-FAILED: {}", r.detail);
             (0, 0, 1)
         }
-        RunReport::Unsupported(e) => {
-            println!("  UNSUPPORTED: {e}");
+        ReportKind::Unsupported => {
+            println!("  UNSUPPORTED: {}", r.detail);
             (0, 0, 1)
         }
-        RunReport::Ran(verdicts) => {
-            let (mut pass, mut fail, mut other) = (0, 0, 0);
-            for cv in &verdicts {
-                let d = cv.verdict.detail();
-                let tail = if d.is_empty() {
+        ReportKind::TimedOut => {
+            println!("  TIMED-OUT: {}", r.detail);
+            (0, 0, 1)
+        }
+        ReportKind::Crashed => {
+            println!("  CRASHED: {}", r.detail);
+            (0, 0, 1)
+        }
+        ReportKind::Ran => {
+            for c in &r.calls {
+                let tail = if c.detail.is_empty() {
                     String::new()
                 } else {
-                    format!("  — {d}")
+                    format!("  — {}", c.detail)
                 };
-                println!("  {:<12} {}{}", cv.verdict.label(), cv.signature, tail);
-                if cv.verdict.is_pass() {
-                    pass += 1;
-                } else if cv.verdict.is_fail() {
-                    fail += 1;
-                } else {
-                    other += 1;
-                }
+                println!("  {:<12} {}{}", c.verdict, c.sig, tail);
             }
-            println!("  {pass} pass, {fail} fail, {other} skipped/unsupported/nofaithful");
-            (pass, fail, other)
+            println!(
+                "  {} pass, {} fail, {} skipped/unsupported/nofaithful",
+                r.pass, r.fail, r.other
+            );
+            (r.pass, r.fail, r.other)
         }
     }
 }
@@ -322,11 +407,36 @@ fn run_cmd(_arg: Option<&str>) -> ExitCode {
 
 #[cfg(feature = "harness")]
 fn run_one_json(arg: Option<&str>) -> ExitCode {
+    use sorobench::harness::TIMEOUT;
+
+    let Some(path) = arg else {
+        eprintln!("usage: sorobench run-one <FILE.sol>");
+        return ExitCode::FAILURE;
+    };
+
+    let exe = match own_exe() {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("run-one: cannot find own executable to isolate the test: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let report = isolate_one(&exe, path, path.to_string(), TIMEOUT);
+    print_report_json("run-one", &report)
+}
+
+/// `sorobench exec-one <FILE>` — the internal leaf worker: run ONE test
+/// in-process and print its single JSON [`FileReport`]. This is the unit that
+/// `run`, `run-one`, and `run-all` each isolate in a subprocess under a timeout;
+/// it is not meant to be invoked directly.
+#[cfg(feature = "harness")]
+fn exec_one_json(arg: Option<&str>) -> ExitCode {
     use sorobench::harness::run_source;
     use sorobench::report::FileReport;
 
     let Some(path) = arg else {
-        eprintln!("usage: sorobench run-one <FILE.sol>");
+        eprintln!("usage: sorobench exec-one <FILE.sol>");
         return ExitCode::FAILURE;
     };
 
@@ -339,16 +449,21 @@ fn run_one_json(arg: Option<&str>) -> ExitCode {
             format!("read: {e}"),
         ),
     };
+    print_report_json("exec-one", &report)
+}
 
-    // One struct → one line. serde owns the escaping, so the wire format can
-    // never drift from what the runner actually computed.
-    match serde_json::to_string(&report) {
+/// Emit one [`FileReport`] as a single JSON line to stdout — the wire format that
+/// `run-all` reads back. serde owns the escaping, so the record can never drift
+/// from what the runner computed. `who` names the caller for the error message.
+#[cfg(feature = "harness")]
+fn print_report_json(who: &str, report: &sorobench::report::FileReport) -> ExitCode {
+    match serde_json::to_string(report) {
         Ok(line) => {
             println!("{line}");
             ExitCode::SUCCESS
         }
         Err(e) => {
-            eprintln!("run-one: serialize failed: {e}");
+            eprintln!("{who}: serialize failed: {e}");
             ExitCode::FAILURE
         }
     }
@@ -356,9 +471,8 @@ fn run_one_json(arg: Option<&str>) -> ExitCode {
 
 #[cfg(feature = "harness")]
 fn run_all(arg: Option<&str>) -> ExitCode {
-    use sorobench::harness::{run_isolated_timeout, Exit};
-    use sorobench::report::{render_markdown, summarize, Bucket, FileReport, ReportKind, RunMeta};
-    use std::time::Duration;
+    use sorobench::harness::TIMEOUT;
+    use sorobench::report::{render_markdown, summarize, Bucket, FileReport, RunMeta};
 
     let root = corpus::corpus_root(arg);
     let paths = match corpus::enumerate(&root) {
@@ -370,20 +484,15 @@ fn run_all(arg: Option<&str>) -> ExitCode {
         }
     };
 
-    let exe = match std::env::current_exe() {
+    let exe = match own_exe() {
         Ok(p) => p,
         Err(e) => {
-            eprintln!("error: cannot find own executable to spawn run-one: {e}");
+            eprintln!("error: cannot find own executable to spawn exec-one: {e}");
             return ExitCode::FAILURE;
         }
     };
-    let exe = exe.to_string_lossy().into_owned();
 
-    let timeout_secs: u64 = std::env::var("SOROBENCH_TIMEOUT")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(60);
-    let timeout = Duration::from_secs(timeout_secs);
+    let timeout_secs = TIMEOUT.as_secs();
 
     let total = paths.len();
     eprintln!(
@@ -400,59 +509,7 @@ fn run_all(arg: Option<&str>) -> ExitCode {
             .into_owned();
         let abs = path.to_string_lossy().into_owned();
 
-        let iso = match run_isolated_timeout(&exe, ["run-one", &abs], timeout) {
-            Ok(iso) => iso,
-            Err(e) => {
-                reports.push(FileReport::synthetic(
-                    rel,
-                    ReportKind::Crashed,
-                    Bucket::Crash,
-                    format!("spawn failed: {e}"),
-                ));
-                continue;
-            }
-        };
-
-        let report = match iso.exit {
-            Exit::Code(0) => match serde_json::from_str::<FileReport>(iso.stdout.trim()) {
-                Ok(mut r) => {
-                    // Re-root the path to the corpus-relative form for the report.
-                    r.path = rel;
-                    r
-                }
-                Err(e) => FileReport::synthetic(
-                    rel,
-                    ReportKind::Crashed,
-                    Bucket::Crash,
-                    format!("run-one produced no valid record: {e}"),
-                ),
-            },
-            Exit::Timeout => FileReport::synthetic(
-                rel,
-                ReportKind::TimedOut,
-                Bucket::Timeout,
-                format!("exceeded {timeout_secs}s"),
-            ),
-            Exit::Signal(sig) => FileReport::synthetic(
-                rel,
-                ReportKind::Crashed,
-                Bucket::Crash,
-                format!("killed by signal {sig}"),
-            ),
-            Exit::Code(n) => FileReport::synthetic(
-                rel,
-                ReportKind::Crashed,
-                Bucket::Crash,
-                format!("run-one exited {n} without a record"),
-            ),
-            Exit::Unknown => FileReport::synthetic(
-                rel,
-                ReportKind::Crashed,
-                Bucket::Crash,
-                "run-one ended in an unknown state".into(),
-            ),
-        };
-        reports.push(report);
+        reports.push(isolate_one(&exe, &abs, rel, TIMEOUT));
 
         if (i + 1) % 50 == 0 || i + 1 == total {
             eprintln!("  {}/{} …", i + 1, total);
@@ -527,6 +584,12 @@ fn run_one_json(_arg: Option<&str>) -> ExitCode {
 }
 
 #[cfg(not(feature = "harness"))]
+fn exec_one_json(_arg: Option<&str>) -> ExitCode {
+    eprintln!("`exec-one` requires building with --features harness (needs the LLVM16 toolchain)");
+    ExitCode::FAILURE
+}
+
+#[cfg(not(feature = "harness"))]
 fn run_all(_arg: Option<&str>) -> ExitCode {
     eprintln!("`run-all` requires building with --features harness (needs the LLVM16 toolchain)");
     ExitCode::FAILURE
@@ -546,13 +609,14 @@ fn usage(w: &mut impl std::io::Write) {
              parse [FILE|DIR]   Parse `// ----` blocks. A FILE prints its calls; a\n    \
                                 DIR (default: corpus) prints a coverage report.\n    \
              run [FILE|DIR]     Run .sol test(s) end-to-end (parse→compile→invoke→\n    \
-                                compare), one verdict per call. Default DIR is\n    \
-                                custom_tests/. Needs --features harness.\n    \
-             run-one <FILE>     Run ONE test and print a single JSON record\n    \
-                                (FileReport) to stdout. The unit run-all isolates.\n    \
-             run-all [DIR]      Run the whole corpus under subprocess isolation and\n    \
-                                write report/results.jsonl + report/summary.md.\n    \
-                                Timeout per test = $SOROBENCH_TIMEOUT s (default 60).\n    \
+                                compare), one verdict per call. Each test runs in\n    \
+                                an isolated subprocess under a 10s timeout. Default\n    \
+                                DIR is custom_tests/. Needs --features harness.\n    \
+             run-one <FILE>     Run ONE isolated test (10s timeout) and print a\n    \
+                                single JSON record (FileReport) to stdout.\n    \
+             run-all [DIR]      Run the whole corpus, each test isolated in a\n    \
+                                subprocess under a 10s timeout, and write\n    \
+                                report/results.jsonl + report/summary.md.\n    \
              help               Show this message."
     );
 }
