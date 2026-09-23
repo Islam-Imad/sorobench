@@ -110,27 +110,27 @@ Two checks keep a decoder bug apart from a real solang bug:
 ## Current results
 
 From the last full corpus run (`report/summary.md`, solc **v0.8.22**, 1503 tests,
-60s per test), against solang at
+10s per test), against solang at
 [`e6289eb`](https://github.com/Islam-Imad/solang/commit/e6289eb708d5cfbe07782dadb9c41c23ba6facfa):
 
-**Headline:** of the **500** files that compiled and ran, **394 (78.8%)** had no
-failed check; **106** showed a likely solang-on-Soroban bug (mismatch or trap).
-Across those files, call by call: **1423 pass**, **276 fail**, 242 other (skipped
+**Headline:** of the **484** files that compiled and ran, **380 (78.5%)** had no
+failed check; **104** showed a likely solang-on-Soroban bug (mismatch or trap).
+Across those files, call by call: **1376 pass**, **261 fail**, 230 other (skipped
 / nofaithful / unsupported).
 
 File-level buckets:
 
 | bucket | files | % | meaning |
 |---|---:|---:|---|
-| `PASS_ALL` | 349 | 23.2% | every checked call passed |
-| `PASS_SOME` | 45 | 3.0% | passed, some calls skipped |
-| `HAS_FAIL` | 106 | 7.1% | a checked mismatch/trap: a real bug |
+| `PASS_ALL` | 336 | 22.4% | every checked call passed |
+| `PASS_SOME` | 44 | 2.9% | passed, some calls skipped |
+| `HAS_FAIL` | 104 | 6.9% | a checked mismatch/trap: a real bug |
 | `ONLY_OTHER` | 36 | 2.4% | nothing checkable ran |
-| `COMPILE_FAIL` | 890 | 59.2% | solang could not compile it, or errored |
-| `CRASH` | 45 | 3.0% | uncatchable abort (caught by isolation) |
+| `COMPILE_FAIL` | 889 | 59.1% | solang could not compile it, or errored |
+| `CRASH` | 43 | 2.9% | uncatchable abort (caught by isolation) |
 | `NO_BLOCK` | 27 | 1.8% | no `// ----` expectations |
 | `UNSUPPORTED` | 0 | 0.0% | a whole-file limit |
-| `TIMEOUT` | 5 | 0.3% | went over the per-test timeout |
+| `TIMEOUT` | 24 | 1.6% | went over the per-test timeout |
 
 The large `COMPILE_FAIL` group comes mostly from a few repeated solang gaps: above
 all *"Soroban external functions can return at most one value"* (no multi-return
@@ -177,7 +177,9 @@ $ cargo run --no-default-features -- parse test.sol
 ### `run`: execute tests (the main command)
 
 Compile, deploy, invoke, decode both sides, compare, printing **one result per
-`// ----` call**. Three forms:
+`// ----` call**. Each file runs in its own subprocess under the same fixed
+**10s** timeout as `run-all`, so a crash or a stuck compile can't take down the
+batch. Three forms:
 
 ```console
 # 1. no argument -> runs every .sol in ./custom_tests/ (your focus set)
@@ -211,11 +213,11 @@ Runs **every** solc semantic test against solang-on-Soroban and writes a report.
 Each test runs in **its own subprocess**: if solang crashes (an internal error,
 an LLVM assert, or a stack overflow) the crash cannot be caught in-process, so
 running each test on its own keeps one bad test from killing the batch of 1500. A
-stuck compile is killed after the per-test timeout.
+stuck compile is killed after the fixed **10s** per-test timeout.
 
 ```console
 $ cargo run -- run-all                    # the pinned solc v0.8.22 corpus
-$ SOROBENCH_TIMEOUT=30 cargo run -- run-all path/to/dir   # any dir, 30s/test
+$ cargo run -- run-all path/to/dir        # any dir, 10s/test
 ```
 
 Two files land in `report/`:
@@ -234,8 +236,9 @@ some calls skipped), `HAS_FAIL` (a checked mismatch/trap: a real solang bug),
 
 ### `run-one`: one test as a JSON record
 
-`run-all`'s single unit, also usable on its own. Runs one file and prints exactly
-one `FileReport` line to stdout (the format `run-all` reads back):
+`run-all`'s single unit, also usable on its own. Runs one file — isolated in a
+subprocess under the 10s timeout — and prints exactly one `FileReport` line to
+stdout (the format `run-all` reads back):
 
 ```console
 $ cargo run -- run-one custom_tests/demo.sol
