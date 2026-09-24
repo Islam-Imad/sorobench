@@ -113,35 +113,44 @@ From the last full corpus run (`report/summary.md`, solc **v0.8.22**, 1503 tests
 10s per test), against solang at
 [`e6289eb`](https://github.com/Islam-Imad/solang/commit/e6289eb708d5cfbe07782dadb9c41c23ba6facfa):
 
-**Headline:** of the **484** files that compiled and ran, **380 (78.5%)** had no
-failed check; **104** showed a likely solang-on-Soroban bug (mismatch or trap).
-Across those files, call by call: **1376 pass**, **261 fail**, 230 other (skipped
-/ nofaithful / unsupported).
+**Headline:** of **1395** candidates (1503 − 81 filtered − 27 housekeeping),
+**380 (27.2%)** pass; **588** gaps (a checked mismatch/trap, or a clean
+compile-fail on portable source) are solang's TODO list; **369** crashes and
+**22** timeouts (solang should reject cleanly, not abort or hang). Call by call
+across the files that ran: **1378 pass**, **269 fail**, 236 other (skipped /
+nofaithful / unsupported).
+
+**81** tests are excluded as EVM-only — a source-level AST scan (`src/filter.rs`)
+drops assembly, `selfdestruct`, `ecrecover`, `tx.origin`, `msg.value`, the
+low-level `.delegatecall` / `.staticcall`, and the `block.*` globals, which the
+Soroban platform can't express, so they aren't counted against solang.
 
 File-level buckets:
 
 | bucket | files | % | meaning |
 |---|---:|---:|---|
-| `PASS_ALL` | 336 | 22.4% | every checked call passed |
-| `PASS_SOME` | 44 | 2.9% | passed, some calls skipped |
-| `HAS_FAIL` | 104 | 6.9% | a checked mismatch/trap: a real bug |
+| `PASS_ALL` | 337 | 22.4% | every checked call passed |
+| `PASS_SOME` | 43 | 2.9% | passed, some calls skipped |
+| `HAS_FAIL` | 105 | 7.0% | a checked mismatch/trap: a real bug |
 | `ONLY_OTHER` | 36 | 2.4% | nothing checkable ran |
-| `COMPILE_FAIL` | 889 | 59.1% | solang could not compile it, or errored |
-| `CRASH` | 43 | 2.9% | uncatchable abort (caught by isolation) |
+| `GAP` | 483 | 32.1% | clean compile-fail on portable source: a solang gap |
+| `FILTERED` | 81 | 5.4% | compile-fail using an EVM-only feature: excluded |
 | `NO_BLOCK` | 27 | 1.8% | no `// ----` expectations |
-| `UNSUPPORTED` | 0 | 0.0% | a whole-file limit |
-| `TIMEOUT` | 24 | 1.6% | went over the per-test timeout |
+| `CRASH` | 369 | 24.6% | uncatchable abort (caught by isolation) |
+| `TIMEOUT` | 22 | 1.5% | went over the per-test timeout |
 
-The large `COMPILE_FAIL` group comes mostly from a few repeated solang gaps: above
-all *"Soroban external functions can return at most one value"* (no multi-return
-support) and internal errors mid-compile. `summary.md` lists every failure, crash,
-timeout, and compile-fail (with its reason) so gaps can be looked at directly.
+The large `GAP` group comes mostly from a few repeated solang gaps: above all
+*"Soroban external functions can return at most one value"* (no multi-return
+support) and internal errors mid-compile. `summary.md` lists every gap, crash,
+and timeout (with its reason), plus the exclusion ledger, so gaps can be looked
+at directly.
 
-> **Note.** These raw buckets are the v1 view: "did it compile, run, and match?"
-> They do **not** yet separate *EVM-only tests that cannot have a Soroban meaning*
-> (assembly, `selfdestruct`, `ecrecover`, and so on) from real solang gaps. That
-> sorting step, putting each test into A (not applicable) / B (bridgeable, on the
-> roadmap) / C (a real pass or gap) for an honest headline, is the next phase.
+> **Note.** `FILTERED` is the exclusion step that used to be the "next phase":
+> tests that cannot have a Soroban meaning (category A) are now dropped by
+> `src/filter.rs` before the count, so `GAP` and `CRASH` are honest solang work
+> items — portable source that should compile but doesn't. Separating the
+> *bridgeable* tests (category B, on the roadmap) from real gaps (category C) is
+> what remains.
 
 Regenerate the report any time with `cargo run -- run-all`.
 
@@ -227,12 +236,14 @@ Two files land in `report/`:
   results).
 - **`summary.md`**: the human report. A headline pass-rate, the file-level bucket
   table, a per-directory breakdown, and the lists you act on (failures, crashes,
-  timeouts, compile-fails with their reasons).
+  timeouts, gaps with their reasons, and the exclusion ledger).
 
 File-level buckets: `PASS_ALL` (every checked call passed), `PASS_SOME` (passed,
 some calls skipped), `HAS_FAIL` (a checked mismatch/trap: a real solang bug),
-`ONLY_OTHER` (nothing checkable ran), `COMPILE_FAIL`, `UNSUPPORTED`, `NO_BLOCK`,
-`FRONTEND_ERROR`, and, added by the driver when a child dies, `CRASH` / `TIMEOUT`.
+`ONLY_OTHER` (nothing checkable ran), `GAP` (clean compile-fail on portable
+source), `FILTERED` (compile-fail using an EVM-only feature: excluded),
+`UNSUPPORTED`, `NO_BLOCK`, `FRONTEND_ERROR`, and, added by the driver when a
+child dies, `CRASH` / `TIMEOUT`.
 
 ### `run-one`: one test as a JSON record
 
@@ -297,7 +308,10 @@ Whole-file (the test cannot run at all):
 
 | Line | Meaning |
 |------|---------|
-| `COMPILE-FAILED` | solang could not compile the source, or errored: a real bug |
+| `GAP (compile-fail, portable)` | solang could not compile portable source, or errored: a real bug |
+| `FILTERED (EVM-only)` | source uses an EVM-only feature Soroban can't express: excluded, not solang's fault |
+| `CRASHED` | an uncatchable abort / stack overflow (caught by the per-test isolation) |
+| `TIMED-OUT` | went over the per-test timeout |
 | `UNSUPPORTED` | a whole-file limit (e.g. the constructor needs args) |
 | `(no // ---- block)` | the file has no expectations to run |
 

@@ -5,9 +5,9 @@
 //
 // WARNING — TOO SLOW TO RUN: the later calls push huge counts (0xFFF = 4095 and
 // 0xFFFFF = 1,048,575 elements) one host storage-write at a time, so `cargo run --
-// run` on this file does NOT finish within 60s (it hits the timeout, exit 124).
-// The small cases (0..0xFF) pass, but the big-push lines make the file impractical
-// to run as-is. It is kept here as a documented perf/scale case, not a green test.
+// run` on this file does NOT finish within the per-test timeout (TIMED-OUT:
+// exceeded 10s). The small cases (0..0xFF) pass, but the big-push lines make the
+// file impractical to run as-is — kept as a documented perf/scale case, not a green test.
 // The final `0xFFFFF -> FAILURE # Out-of-gas #` line is also EVM-specific: Soroban
 // runs under an unlimited test budget, so it would not out-of-gas the same way.
 contract C {

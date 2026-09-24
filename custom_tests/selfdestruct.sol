@@ -1,8 +1,8 @@
 // solc semanticTests/various/selfdestruct.sol (verbatim).
 // EVM-specific: uses selfdestruct(), address.code, .balance, new{value:}, emit.
-// Result: COMPILE-FAILED ("unknown function or type 'selfdestruct'; 'address.code'
-// is not supported on Soroban"). These are EVM-only builtins gated out of the
-// Soroban target -> Class A (disclosed-N/A), not a solang bug.
+// Result: FILTERED (EVM-only) — the source-level filter flags `selfdestruct`
+// ("EVM-only builtin, no Soroban primitive") before compile. These are EVM-only
+// builtins with no Soroban meaning -> Class A (disclosed-N/A), not a solang bug.
 contract C {
   event Terminated();
 

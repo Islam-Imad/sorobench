@@ -5,6 +5,7 @@ use crate::decoder::val::{from_val, to_val};
 use crate::decoder::{abi, bytes_utils, NativeValue, SorobanType};
 use crate::expectation::ast::{FunctionCall, Kind, Parameter};
 use crate::expectation::{parse_calls, semantic_test_builtins};
+use crate::filter::filter_source;
 use crate::testfile;
 
 use super::compile::{compile_soroban, Compiled};
@@ -75,12 +76,25 @@ pub enum RunReport {
     FrontendError(String),
     // No `// ----` block — nothing to run.
     NoExpectations,
-    // solang could not compile the source, or panicked while compiling.
-    CompileFailed(String),
+    // Clean compile error (`Level::Error`) on portable source → a solang GAP to
+    // fix. (Was `CompileFailed`; the crash and filtered cases split out below.)
+    Gap(String),
+    // Clean compile error whose source uses an EVM feature Soroban's platform
+    // cannot express → EXCLUDED, not solang's fault
+    Filtered { feature: String, note: String },
+    // solang panicked / ICE'd while compiling. A crash is terminal and is never
+    // reclassified as filtered
+    Crashed(String),
     // the tool cannot handle yet.
     Unsupported(String),
     // Per-call verdicts.
     Ran(Vec<CallVerdict>),
+}
+
+enum Guarded {
+    Ok(Box<Compiled>),
+    CleanError(String),
+    Ice(String),
 }
 
 pub fn run_source(text: &str) -> RunReport {
@@ -97,9 +111,19 @@ pub fn run_source(text: &str) -> RunReport {
         Err(e) => return RunReport::FrontendError(format!("parse: {}", e.message)),
     };
 
-    let compiled = match compile_guarded(file.main_source_content()) {
-        Ok(c) => c,
-        Err(msg) => return RunReport::CompileFailed(msg),
+    let src = file.main_source_content();
+    let compiled = match compile_guarded(src) {
+        Guarded::Ok(c) => *c,
+        Guarded::Ice(msg) => return RunReport::Crashed(msg),
+        Guarded::CleanError(msg) => {
+            return match filter_source(src) {
+                Some(reason) => RunReport::Filtered {
+                    feature: reason.feature.to_string(),
+                    note: reason.to_string(),
+                },
+                None => RunReport::Gap(msg),
+            }
+        }
     };
 
     let mut h = SorobanEnv::new();
@@ -139,15 +163,15 @@ fn deploy(
     Ok(h.register_contract_with_arg_vals(&compiled.wasm, args))
 }
 
-fn compile_guarded(src: &str) -> Result<Compiled, String> {
+fn compile_guarded(src: &str) -> Guarded {
     let prev = std::panic::take_hook();
     std::panic::set_hook(Box::new(|_| {}));
     let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| compile_soroban(src)));
     std::panic::set_hook(prev);
     match res {
-        Ok(Ok(c)) => Ok(c),
-        Ok(Err(e)) => Err(e.to_string()),
-        Err(_) => Err("solang panicked mid-compile (ICE)".into()),
+        Ok(Ok(c)) => Guarded::Ok(Box::new(c)),
+        Ok(Err(e)) => Guarded::CleanError(e.to_string()),
+        Err(_) => Guarded::Ice("solang panicked mid-compile (ICE)".into()),
     }
 }
 
