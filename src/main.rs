@@ -10,6 +10,7 @@ fn main() -> ExitCode {
     match args.get(1).map(String::as_str) {
         Some("list-tests") => list_tests(args.get(2).map(String::as_str)),
         Some("parse") => parse_cmd(args.get(2).map(String::as_str)),
+        Some("filter") => filter_cmd(args.get(2).map(String::as_str)),
         Some("run") => run_cmd(args.get(2).map(String::as_str)),
         Some("run-one") => run_one_json(args.get(2).map(String::as_str)),
         Some("exec-one") => exec_one_json(args.get(2).map(String::as_str)),
@@ -215,6 +216,78 @@ fn parse_one_verbose(path: &Path, builtins: &Builtins) -> ExitCode {
     }
 }
 
+/// `sorobench filter [DIR]` — run the pt-based filter (spec §9) over every
+/// `.sol` and print the exclusion ledger: how many tests use an EVM feature
+/// Soroban cannot express, grouped by feature, plus the list. No compile — this
+/// is how detection quality is eyeballed over the whole corpus.
+#[cfg(feature = "filter")]
+fn filter_cmd(cli_root: Option<&str>) -> ExitCode {
+    use sorobench::filter::{filter_source, FilterReason};
+    use std::collections::BTreeMap;
+
+    let root = corpus::corpus_root(cli_root);
+    let paths = match corpus::enumerate(&root) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("error: walking {}: {e}", root.display());
+            eprintln!("hint: set $SOROBENCH_CORPUS or pass the dir as an argument");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let mut filtered: Vec<(String, FilterReason)> = Vec::new();
+    let mut read_errors = 0usize;
+    for path in &paths {
+        let Ok(text) = std::fs::read_to_string(path) else {
+            read_errors += 1;
+            continue;
+        };
+        // Filter the region-1 Solidity (what the runner compiles), so the DSL
+        // tail is never parsed as source. If the split fails, scan the raw text.
+        let src = match testfile::split(&text) {
+            Ok(f) => f.main_source_content().to_string(),
+            Err(_) => text,
+        };
+        if let Some(reason) = filter_source(&src) {
+            let rel = path.strip_prefix(&root).unwrap_or(path).display().to_string();
+            filtered.push((rel, reason));
+        }
+    }
+
+    let mut by_feature: BTreeMap<&'static str, usize> = BTreeMap::new();
+    for (_, r) in &filtered {
+        *by_feature.entry(r.feature).or_insert(0) += 1;
+    }
+
+    let pct = 100.0 * filtered.len() as f64 / paths.len().max(1) as f64;
+    println!("sorobench filter — pt-based EVM-feature exclusion ledger");
+    println!("  root:      {}", root.display());
+    println!("  files:     {}", paths.len());
+    println!("  filtered:  {}  ({pct:.1}%)", filtered.len());
+    if read_errors > 0 {
+        println!("  read errs: {read_errors}");
+    }
+
+    println!("\nby feature (count):");
+    let mut rows: Vec<(&&str, &usize)> = by_feature.iter().collect();
+    rows.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+    for (feat, n) in rows {
+        println!("  {n:>4}  {feat}");
+    }
+
+    println!("\nfiltered files:");
+    for (rel, r) in &filtered {
+        println!("  [{}] {}", r.feature, rel);
+    }
+    ExitCode::SUCCESS
+}
+
+#[cfg(not(feature = "filter"))]
+fn filter_cmd(_arg: Option<&str>) -> ExitCode {
+    eprintln!("`filter` requires building with --features filter");
+    ExitCode::FAILURE
+}
+
 #[cfg(feature = "harness")]
 fn run_cmd(arg: Option<&str>) -> ExitCode {
     use sorobench::harness::TIMEOUT;
@@ -365,8 +438,12 @@ fn print_file_report(r: &sorobench::report::FileReport) -> (usize, usize, usize)
             println!("  (no // ---- block)");
             (0, 0, 1)
         }
-        ReportKind::CompileFailed => {
-            println!("  COMPILE-FAILED: {}", r.detail);
+        ReportKind::Gap => {
+            println!("  GAP (compile-fail, portable): {}", r.detail);
+            (0, 0, 1)
+        }
+        ReportKind::Filtered => {
+            println!("  FILTERED (EVM-only): {}", r.detail);
             (0, 0, 1)
         }
         ReportKind::Unsupported => {
@@ -608,6 +685,8 @@ fn usage(w: &mut impl std::io::Write) {
                                 pinned solang submodule; override with $SOROBENCH_CORPUS.\n    \
              parse [FILE|DIR]   Parse `// ----` blocks. A FILE prints its calls; a\n    \
                                 DIR (default: corpus) prints a coverage report.\n    \
+             filter [DIR]       pt-based filter: list tests using EVM features\n    \
+                                Soroban cannot express + an exclusion ledger.\n    \
              run [FILE|DIR]     Run .sol test(s) end-to-end (parse→compile→invoke→\n    \
                                 compare), one verdict per call. Each test runs in\n    \
                                 an isolated subprocess under a 10s timeout. Default\n    \

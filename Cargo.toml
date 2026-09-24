@@ -13,10 +13,11 @@ path = "src/main.rs"
 [features]
 default = ["harness"]
 decoder = ["dep:alloy-dyn-abi", "dep:alloy-primitives", "dep:soroban-sdk"]
+filter = ["dep:solang-parser"]
 # `serde`/`serde_json` power the `FileReport` wire format that `run-one` emits and
 # `run-all` reads back — both already live in solang's tree, so the harness build
 # pulls nothing new. The default (LLVM-free) build stays dependency-free.
-harness = ["decoder", "dep:solang", "dep:solang-parser", "dep:serde", "dep:serde_json"]
+harness = ["filter", "decoder", "dep:solang", "dep:serde", "dep:serde_json"]
 
 [dependencies]
 # NOTE: version pinned for real when Phase 2 starts; unbuilt at Phase 0.

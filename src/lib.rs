@@ -2,6 +2,9 @@ pub mod corpus;
 pub mod expectation;
 pub mod testfile;
 
+#[cfg(feature = "filter")]
+pub mod filter;
+
 #[cfg(feature = "decoder")]
 pub mod decoder;
 
