@@ -3,7 +3,7 @@
 // (alongside a calldata array) into the free function `fun`.
 // From solc semanticTests/freeFunctions/storage_calldata_refs.sol.
 //
-// RESULT via `cargo run -- run`: COMPILE-FAILED
+// RESULT via `cargo run -- run`: GAP (compile-fail, portable)
 //   solang: "Soroban external functions can return at most one value"
 //
 // SOLANG-GAP: this never reaches the storage-ref-free-function path we wanted to

@@ -216,10 +216,6 @@ fn parse_one_verbose(path: &Path, builtins: &Builtins) -> ExitCode {
     }
 }
 
-/// `sorobench filter [DIR]` — run the pt-based filter (spec §9) over every
-/// `.sol` and print the exclusion ledger: how many tests use an EVM feature
-/// Soroban cannot express, grouped by feature, plus the list. No compile — this
-/// is how detection quality is eyeballed over the whole corpus.
 #[cfg(feature = "filter")]
 fn filter_cmd(cli_root: Option<&str>) -> ExitCode {
     use sorobench::filter::{filter_source, FilterReason};
@@ -249,7 +245,11 @@ fn filter_cmd(cli_root: Option<&str>) -> ExitCode {
             Err(_) => text,
         };
         if let Some(reason) = filter_source(&src) {
-            let rel = path.strip_prefix(&root).unwrap_or(path).display().to_string();
+            let rel = path
+                .strip_prefix(&root)
+                .unwrap_or(path)
+                .display()
+                .to_string();
             filtered.push((rel, reason));
         }
     }

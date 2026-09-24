@@ -56,9 +56,11 @@ You can also point it at any other directory of `.sol` tests.
 | `SKIP`         | not run (value call, builtin, library, or constructor line)   |
 | `UNSUPPORTED`  | a type/feature the runner doesn't handle yet                  |
 
-A whole file can also fail before any call runs — you'll see `COMPILE-FAILED`
-(solang couldn't compile the source), `UNSUPPORTED`, `FRONTEND-ERROR` (the
-`// ----` block didn't parse), or `(no // ---- block)`.
+A whole file can also fail before any call runs — you'll see `GAP (compile-fail,
+portable)` (solang couldn't compile portable source: a real gap), `FILTERED
+(EVM-only)` (the source uses an EVM-only feature Soroban can't express),
+`CRASHED`, `TIMED-OUT`, `UNSUPPORTED`, `FRONTEND-ERROR` (the `// ----` block
+didn't parse), or `(no // ---- block)`.
 
 ## What a run does
 
