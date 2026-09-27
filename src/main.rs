@@ -15,6 +15,7 @@ fn main() -> ExitCode {
         Some("run-one") => run_one_json(args.get(2).map(String::as_str)),
         Some("exec-one") => exec_one_json(args.get(2).map(String::as_str)),
         Some("run-all") => run_all(args.get(2).map(String::as_str)),
+        Some("gaps") => gaps_cmd(args.get(2).map(String::as_str)),
         Some("-h") | Some("--help") | Some("help") => {
             usage(&mut std::io::stdout().lock());
             ExitCode::SUCCESS
@@ -672,6 +673,72 @@ fn run_all(_arg: Option<&str>) -> ExitCode {
     ExitCode::FAILURE
 }
 
+#[cfg(feature = "gaps")]
+fn gaps_cmd(arg: Option<&str>) -> ExitCode {
+    use sorobench::gaps;
+
+    let source = arg.unwrap_or("report/results.jsonl");
+    let text = match std::fs::read_to_string(source) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("error: reading {source}: {e}");
+            eprintln!("hint: run `sorobench run-all` first, or pass the path to a results.jsonl");
+            return ExitCode::FAILURE;
+        }
+    };
+    let reports = match gaps::read_reports(&text) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("error: parsing {source}: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let causes = gaps::cluster(&reports);
+    let total: usize = causes.iter().map(|c| c.files.len()).sum();
+    let noise: usize = causes
+        .iter()
+        .filter(|c| c.harness_noise)
+        .map(|c| c.files.len())
+        .sum();
+    let real_causes = causes.iter().filter(|c| !c.harness_noise).count();
+
+    // Write the ledger.
+    let out_dir = PathBuf::from("gap");
+    if let Err(e) = std::fs::create_dir_all(&out_dir) {
+        eprintln!("error: creating {}: {e}", out_dir.display());
+        return ExitCode::FAILURE;
+    }
+    let md = gaps::render_markdown(&causes, source);
+    let md_path = out_dir.join("README.md");
+    if let Err(e) = std::fs::write(&md_path, &md) {
+        eprintln!("error: writing {}: {e}", md_path.display());
+        return ExitCode::FAILURE;
+    }
+
+    // Console ledger — the same "major gaps" table, top 30.
+    println!("sorobench gaps — solang root-cause TODO list");
+    println!("  source:      {source}");
+    println!("  GAP files:   {total}");
+    println!("  root causes: {real_causes} solang + {noise} file(s) multi-file (harness)");
+    println!("\nmajor gaps (files  root cause):");
+    for c in causes.iter().take(30) {
+        let tag = if c.harness_noise { "  [harness]" } else { "" };
+        println!("  {:>4}  {}{tag}", c.files.len(), c.canon);
+    }
+    if causes.len() > 30 {
+        println!("  … and {} more cause(s)", causes.len() - 30);
+    }
+    println!("\nwrote {}", md_path.display());
+    ExitCode::SUCCESS
+}
+
+#[cfg(not(feature = "gaps"))]
+fn gaps_cmd(_arg: Option<&str>) -> ExitCode {
+    eprintln!("`gaps` requires building with --features gaps");
+    ExitCode::FAILURE
+}
+
 fn usage(w: &mut impl std::io::Write) {
     let _ = writeln!(
         w,
@@ -696,6 +763,10 @@ fn usage(w: &mut impl std::io::Write) {
              run-all [DIR]      Run the whole corpus, each test isolated in a\n    \
                                 subprocess under a 10s timeout, and write\n    \
                                 report/results.jsonl + report/summary.md.\n    \
+             gaps [RESULTS]     Cluster the GAP bucket of a finished run into a\n    \
+                                solang root-cause TODO list; write gap/README.md.\n    \
+                                Reads report/results.jsonl by default — no compile,\n    \
+                                so it runs standalone (--features gaps).\n    \
              help               Show this message."
     );
 }

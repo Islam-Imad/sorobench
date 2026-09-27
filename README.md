@@ -1,5 +1,7 @@
 # sorobench
 
+📋 **[solang gaps](gap/README.md)** — the clustered solang root-cause TODO list.
+
 Run the [solc](https://github.com/ethereum/solidity) **semantic test suite**
 against [solang](https://github.com/hyperledger-solang/solang)'s **Soroban**
 target, using each test's saved EVM `// ----` values as the answer key.
@@ -255,6 +257,35 @@ stdout (the format `run-all` reads back):
 $ cargo run -- run-one custom_tests/demo.sol
 {"path":"custom_tests/demo.sol","report":"ran","bucket":"HAS_FAIL","pass":4,"fail":1,…}
 ```
+
+### `gaps`: the solang root-cause TODO list
+
+`run-all` labels each file's `bucket`; **`gaps`** turns the `GAP` bucket into an
+actionable, deduplicated TODO list — *which* solang limitations block the corpus,
+and how many files each one costs. A `GAP` is a file solang rejected with a
+**clean** compile error on **portable** source: not `FILTERED` (no EVM-only
+feature), not `CRASH`, not `TIMEOUT` — so Soroban can express it and the fix is in
+solang.
+
+It reads `report/results.jsonl` (no compile, no LLVM), so it runs standalone and
+fast — you can iterate on it without re-running the corpus:
+
+```console
+$ cargo run --no-default-features --features gaps -- gaps      # standalone, ~5s build
+$ cargo run -- gaps                                            # or under the full build
+$ cargo run -- gaps path/to/results.jsonl                      # any results file
+```
+
+It clusters each GAP file by its **primary** solang diagnostic — splitting the
+concatenated `detail` on `;`, deduping, and canonicalizing identifiers/numbers so
+e.g. `conversion to bytes1 …` and `conversion to bytes3 …` share one cause. Files
+whose failure is a missing `import` (a `file not found` — sorobench feeds solang
+one source at a time) are grouped under a single **harness** cause and flagged, so
+they never inflate the real solang list. The result lands in `gap/README.md`
+(a "major gaps" table + the files under each cause) and the top causes print to
+the console. Today: 483 GAP files → 78 solang root causes + 52 multi-file-import
+files; the biggest by far is *"Soroban external functions can return at most one
+value."*
 
 ### Your own tests: `custom_tests/`
 

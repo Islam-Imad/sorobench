@@ -11,5 +11,8 @@ pub mod decoder;
 #[cfg(feature = "harness")]
 pub mod harness;
 
-#[cfg(feature = "harness")]
+#[cfg(feature = "gaps")]
 pub mod report;
+
+#[cfg(feature = "gaps")]
+pub mod gaps;
