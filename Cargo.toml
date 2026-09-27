@@ -17,7 +17,10 @@ filter = ["dep:solang-parser"]
 # `serde`/`serde_json` power the `FileReport` wire format that `run-one` emits and
 # `run-all` reads back — both already live in solang's tree, so the harness build
 # pulls nothing new. The default (LLVM-free) build stays dependency-free.
-harness = ["filter", "decoder", "dep:solang", "dep:serde", "dep:serde_json"]
+# `gaps` is the read-only half: it only deserializes `results.jsonl`, so it needs
+# serde but NOT the LLVM16 harness — `sorobench gaps` builds and runs standalone.
+gaps = ["dep:serde", "dep:serde_json"]
+harness = ["filter", "decoder", "gaps", "dep:solang"]
 
 [dependencies]
 # NOTE: version pinned for real when Phase 2 starts; unbuilt at Phase 0.
