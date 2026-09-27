@@ -43,17 +43,12 @@ pub fn atoms(detail: &str) -> Vec<String> {
     seen
 }
 
-/// Canonicalize one atom into a cluster key: `'quoted'` and `` `quoted` `` spans
-/// collapse to `'X'`/`` `X` ``, and any run of ASCII digits collapses to `N`, so
-/// `conversion to bytes1 from uint32` and `conversion to bytes3 from uint32`
-/// (etc.) land in the same bucket. Regex-free to keep the standalone build lean.
 pub fn canonicalize(atom: &str) -> String {
     let mut out = String::with_capacity(atom.len());
     let mut chars = atom.chars().peekable();
     while let Some(c) = chars.next() {
         match c {
             '\'' | '`' => {
-                // Collapse the whole quoted span to the same delimiter + X.
                 out.push(c);
                 out.push('X');
                 for q in chars.by_ref() {
@@ -80,17 +75,12 @@ const HARNESS_MARKER: &str = "file not found";
 const HARNESS_CANON: &str =
     "file not found 'X' (multi-file import — sorobench limitation, not a solang gap)";
 
-/// Cluster the GAP files of a run by primary root cause. Every `Bucket::Gap`
-/// report appears under exactly one [`Cause`]; the returned list is sorted by
-/// file count (desc), then by canonical key. Non-GAP reports are ignored.
 pub fn cluster(reports: &[FileReport]) -> Vec<Cause> {
     let mut map: BTreeMap<String, Cause> = BTreeMap::new();
 
     for r in reports.iter().filter(|r| r.bucket == Bucket::Gap) {
         let parts = atoms(&r.detail);
 
-        // A `file not found` anywhere means the true root is a missing imported
-        // source (the rest is cascade) — group the whole file as harness noise.
         let (canon, raw, harness_noise) =
             if let Some(nf) = parts.iter().find(|a| a.contains(HARNESS_MARKER)) {
                 (HARNESS_CANON.to_string(), nf.clone(), true)
@@ -153,17 +143,10 @@ pub fn render_markdown(causes: &[Cause], source: &str) -> String {
     );
 
     let _ = writeln!(s, "## Major gaps (by file count)\n");
-    let _ = writeln!(s, "| files | root cause | kind |");
-    let _ = writeln!(s, "|---:|---|---|");
+    let _ = writeln!(s, "| files | root cause |");
+    let _ = writeln!(s, "|---:|---|");
     for c in causes {
-        let kind = if c.harness_noise { "harness" } else { "solang" };
-        let _ = writeln!(
-            s,
-            "| {} | {} | {} |",
-            c.files.len(),
-            md_cell(&c.canon),
-            kind
-        );
+        let _ = writeln!(s, "| {} | {} |", c.files.len(), md_cell(&c.canon));
     }
     let _ = writeln!(s);
 

@@ -673,9 +673,6 @@ fn run_all(_arg: Option<&str>) -> ExitCode {
     ExitCode::FAILURE
 }
 
-/// `sorobench gaps [RESULTS.jsonl]` — cluster the GAP bucket of a finished run
-/// into a solang root-cause TODO list. Reads the JSONL `run-all` already wrote
-/// (default `report/results.jsonl`); compiles nothing, so it runs standalone.
 #[cfg(feature = "gaps")]
 fn gaps_cmd(arg: Option<&str>) -> ExitCode {
     use sorobench::gaps;
@@ -707,13 +704,13 @@ fn gaps_cmd(arg: Option<&str>) -> ExitCode {
     let real_causes = causes.iter().filter(|c| !c.harness_noise).count();
 
     // Write the ledger.
-    let out_dir = PathBuf::from("report");
+    let out_dir = PathBuf::from("gap");
     if let Err(e) = std::fs::create_dir_all(&out_dir) {
         eprintln!("error: creating {}: {e}", out_dir.display());
         return ExitCode::FAILURE;
     }
     let md = gaps::render_markdown(&causes, source);
-    let md_path = out_dir.join("GAPS.md");
+    let md_path = out_dir.join("README.md");
     if let Err(e) = std::fs::write(&md_path, &md) {
         eprintln!("error: writing {}: {e}", md_path.display());
         return ExitCode::FAILURE;
@@ -767,7 +764,7 @@ fn usage(w: &mut impl std::io::Write) {
                                 subprocess under a 10s timeout, and write\n    \
                                 report/results.jsonl + report/summary.md.\n    \
              gaps [RESULTS]     Cluster the GAP bucket of a finished run into a\n    \
-                                solang root-cause TODO list; write report/GAPS.md.\n    \
+                                solang root-cause TODO list; write gap/README.md.\n    \
                                 Reads report/results.jsonl by default — no compile,\n    \
                                 so it runs standalone (--features gaps).\n    \
              help               Show this message."
