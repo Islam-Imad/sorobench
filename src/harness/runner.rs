@@ -8,7 +8,7 @@ use crate::expectation::{parse_calls, semantic_test_builtins};
 use crate::filter::filter_source;
 use crate::testfile;
 
-use super::compile::{compile_sources, Compiled};
+use super::compile::{check_other_target, compile_sources, Compiled};
 use super::env::{Outcome, SorobanEnv};
 use super::typemap::{resolve_constructor, resolve_overloads, MappedType, ResolvedFn};
 
@@ -108,9 +108,23 @@ pub fn run_source(text: &str) -> RunReport {
 /// Like [`run_source`], but also returns Solang's (non-noise) warnings, which
 /// often explain a failure (e.g. `uint8 … will be rounded up to uint32`).
 pub fn run_source_with_warnings(text: &str) -> (RunReport, Vec<String>) {
-    let mut warnings = Vec::new();
-    let report = run_inner(text, &mut warnings);
-    (report, warnings)
+    let (report, extras) = run_source_full(text);
+    (report, extras.warnings)
+}
+
+/// Extra facts about a run that explain its result.
+#[derive(Debug, Default, Clone)]
+pub struct RunExtras {
+    /// Solang's non-noise warnings.
+    pub warnings: Vec<String>,
+    /// For a GAP: the Polkadot front-end result (see [`check_other_target`]).
+    pub other_target: String,
+}
+
+pub fn run_source_full(text: &str) -> (RunReport, RunExtras) {
+    let mut extras = RunExtras::default();
+    let report = run_inner(text, &mut extras);
+    (report, extras)
 }
 
 /// The test's sources as (resolver name, content), plus the main source name.
@@ -136,7 +150,7 @@ pub fn filter_sources(file: &testfile::TestFile) -> Option<crate::filter::Filter
     file.sources.iter().find_map(|s| filter_source(&s.content))
 }
 
-fn run_inner(text: &str, warnings: &mut Vec<String>) -> RunReport {
+fn run_inner(text: &str, extras: &mut RunExtras) -> RunReport {
     let file = match testfile::split(text) {
         Ok(f) => f,
         Err(e) => return RunReport::FrontendError(format!("split: {}", e.message)),
@@ -153,7 +167,7 @@ fn run_inner(text: &str, warnings: &mut Vec<String>) -> RunReport {
     let (sources, main) = sources_of(&file);
     let compiled = match compile_guarded(&sources, &main) {
         Guarded::Ok(c) => {
-            *warnings = c.warnings.clone();
+            extras.warnings = c.warnings.clone();
             *c
         }
         // A crash on EVM-only source is excluded like a clean failure would be,
@@ -168,13 +182,16 @@ fn run_inner(text: &str, warnings: &mut Vec<String>) -> RunReport {
             }
         }
         Guarded::CleanError(msg, w) => {
-            *warnings = w;
+            extras.warnings = w;
             return match filter_sources(&file) {
                 Some(reason) => RunReport::Filtered {
                     feature: reason.feature.to_string(),
                     note: reason.to_string(),
                 },
-                None => RunReport::Gap(msg),
+                None => {
+                    extras.other_target = check_other_target(&sources, &main);
+                    RunReport::Gap(msg)
+                }
             };
         }
     };

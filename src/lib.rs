@@ -22,3 +22,6 @@ pub mod gaps;
 
 #[cfg(feature = "gaps")]
 pub mod crashes;
+
+#[cfg(feature = "gaps")]
+pub mod explain;

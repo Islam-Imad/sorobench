@@ -111,6 +111,11 @@ pub struct FileReport {
     /// explain a failure, e.g. an integer width rounded up on Soroban.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub warnings: Vec<String>,
+    /// For GAP files: the same test compiled (front end only) for Solang's
+    /// Polkadot target — `compiles`, `fails: <errors>` or `crashes`. Tells a
+    /// Soroban-specific gap from a limitation of Solang on every target.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub other_target: String,
 }
 
 impl FileReport {
@@ -125,6 +130,7 @@ impl FileReport {
             detail,
             calls: Vec::new(),
             warnings: Vec::new(),
+            other_target: String::new(),
         }
     }
 }
@@ -233,6 +239,7 @@ impl FileReport {
             detail,
             calls,
             warnings: Vec::new(),
+            other_target: String::new(),
         }
     }
 }

@@ -17,6 +17,7 @@ fn main() -> ExitCode {
         Some("run-all") => run_all(args.get(2).map(String::as_str)),
         Some("gaps") => gaps_cmd(args.get(2).map(String::as_str)),
         Some("crashes") => crashes_cmd(args.get(2).map(String::as_str)),
+        Some("explain") => explain_cmd(args.get(2).map(String::as_str)),
         Some("-h") | Some("--help") | Some("help") => {
             usage(&mut std::io::stdout().lock());
             ExitCode::SUCCESS
@@ -543,7 +544,7 @@ fn run_one_json(arg: Option<&str>) -> ExitCode {
 /// it is not meant to be invoked directly.
 #[cfg(feature = "harness")]
 fn exec_one_json(arg: Option<&str>) -> ExitCode {
-    use sorobench::harness::run_source_with_warnings;
+    use sorobench::harness::run_source_full;
     use sorobench::report::FileReport;
 
     let Some(path) = arg else {
@@ -553,9 +554,10 @@ fn exec_one_json(arg: Option<&str>) -> ExitCode {
 
     let report = match std::fs::read_to_string(path) {
         Ok(text) => {
-            let (run, warnings) = run_source_with_warnings(&text);
+            let (run, extras) = run_source_full(&text);
             let mut r = FileReport::from_run(path.to_string(), &run);
-            r.warnings = warnings;
+            r.warnings = extras.warnings;
+            r.other_target = extras.other_target;
             r
         }
         Err(e) => FileReport::synthetic(
@@ -660,6 +662,11 @@ fn run_all(arg: Option<&str>) -> ExitCode {
         return ExitCode::FAILURE;
     }
     eprintln!("wrote {}", md_path.display());
+
+    match write_explained(&reports, &out_dir.join("EXPLAINED.md")) {
+        Ok(p) => eprintln!("wrote {p}"),
+        Err(e) => eprintln!("warning: EXPLAINED.md not written: {e}"),
+    }
 
     // --- console bucket summary ---
     println!("\nsorobench run-all — {} test(s)", summary.total.files);
@@ -771,6 +778,76 @@ fn gaps_cmd(arg: Option<&str>) -> ExitCode {
     ExitCode::SUCCESS
 }
 
+/// Load the explanation dictionary: `$SOROBENCH_DICTIONARY` if set, else the
+/// one built into the binary.
+#[cfg(feature = "gaps")]
+fn load_dictionary() -> Result<sorobench::explain::Dictionary, String> {
+    use sorobench::explain::{parse, DEFAULT_DICTIONARY};
+    match std::env::var("SOROBENCH_DICTIONARY") {
+        Ok(path) => {
+            let text =
+                std::fs::read_to_string(&path).map_err(|e| format!("reading {path}: {e}"))?;
+            parse(&text).map_err(|e| format!("parsing {path}: {e}"))
+        }
+        Err(_) => parse(DEFAULT_DICTIONARY).map_err(|e| format!("built-in dictionary: {e}")),
+    }
+}
+
+#[cfg(feature = "gaps")]
+fn write_explained(
+    reports: &[sorobench::report::FileReport],
+    path: &Path,
+) -> Result<String, String> {
+    let dict = load_dictionary()?;
+    let md = sorobench::explain::render(&dict, reports);
+    std::fs::write(path, md).map_err(|e| format!("writing {}: {e}", path.display()))?;
+    Ok(path.display().to_string())
+}
+
+/// `sorobench explain [RESULTS]` — re-explain a finished run with the current
+/// dictionary, without re-running any test. Writes `report/EXPLAINED.md`.
+#[cfg(feature = "gaps")]
+fn explain_cmd(arg: Option<&str>) -> ExitCode {
+    use sorobench::gaps;
+
+    let source = arg.unwrap_or("report/results.jsonl");
+    let text = match std::fs::read_to_string(source) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("error: reading {source}: {e}");
+            eprintln!("hint: run `sorobench run-all` first, or pass the path to a results.jsonl");
+            return ExitCode::FAILURE;
+        }
+    };
+    let reports = match gaps::read_reports(&text) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("error: parsing {source}: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let out = Path::new(source)
+        .parent()
+        .unwrap_or(Path::new("."))
+        .join("EXPLAINED.md");
+    match write_explained(&reports, &out) {
+        Ok(p) => {
+            println!("wrote {p}");
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("error: {e}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+#[cfg(not(feature = "gaps"))]
+fn explain_cmd(_arg: Option<&str>) -> ExitCode {
+    eprintln!("`explain` requires building with --features gaps");
+    ExitCode::FAILURE
+}
+
 #[cfg(not(feature = "gaps"))]
 fn gaps_cmd(_arg: Option<&str>) -> ExitCode {
     eprintln!("`gaps` requires building with --features gaps");
@@ -875,6 +952,10 @@ fn usage(w: &mut impl std::io::Write) {
                                 unique crash message; write ledger/crash.md.\n    \
                                 Reads report/results.jsonl by default — no compile,\n    \
                                 so it runs standalone (--features gaps).\n    \
+             explain [RESULTS]  Explain every failure of a finished run with the\n    \
+                                dictionary (dictionary/soroban.toml, or\n    \
+                                $SOROBENCH_DICTIONARY); write report/EXPLAINED.md.\n    \
+                                run-all writes it too.\n    \
              help               Show this message."
     );
 }

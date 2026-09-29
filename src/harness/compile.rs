@@ -63,6 +63,33 @@ impl fmt::Debug for CompileError {
     }
 }
 
+/// Run Solang's front end on the same sources for the Polkadot target, to tell
+/// a Soroban-specific rejection from a Solang limitation on every target.
+/// Returns `compiles`, `fails: <errors>`, or `crashes`.
+pub fn check_other_target(sources: &[(String, String)], main: &str) -> String {
+    let prev = std::panic::take_hook();
+    std::panic::set_hook(Box::new(|_| {}));
+    let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let mut cache = FileResolver::default();
+        for (name, content) in sources {
+            cache.set_file_contents(name, content.clone());
+        }
+        let ns =
+            solang::parse_and_resolve(OsStr::new(main), &mut cache, Target::default_polkadot());
+        ns.diagnostics
+            .iter()
+            .filter(|d| d.level == Level::Error)
+            .map(|d| d.message.clone())
+            .collect::<Vec<String>>()
+    }));
+    std::panic::set_hook(prev);
+    match res {
+        Ok(errors) if errors.is_empty() => "compiles".to_string(),
+        Ok(errors) => format!("fails: {}", errors.join("; ")),
+        Err(_) => "crashes".to_string(),
+    }
+}
+
 pub fn compile_soroban(src: &str) -> Result<Compiled, CompileError> {
     compile_sources(&[("test.sol".to_string(), src.to_string())], "test.sol")
 }

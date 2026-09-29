@@ -364,6 +364,34 @@ A crash or timeout on source that uses an EVM-only feature is reported as `FILTE
 
 Multi-source tests (`==== Source: NAME ====`) are compiled with every source registered under its name, so imports resolve.
 
+### `explain`: every failure explained
+
+`run-all` also writes **`report/EXPLAINED.md`**, a report meant for anyone, not just sorobench users. Every failure is matched against the explanation dictionary, `dictionary/soroban.toml`, and put in one category:
+
+| category | meaning |
+|---|---|
+| `bug` | violates Solang's documented behaviour (compiler crashes, wrong results) |
+| `review` | not explained yet; needs a human to check it against the docs |
+| `soroban-gap` | missing on Soroban, not documented, works on Solang's other targets |
+| `solang-gap` | rejected by Solang on every target: a general Solang limitation |
+| `documented-unsupported` | Solang's docs list the feature as unsupported on Soroban |
+| `documented-difference` | Solang's docs describe the behaviour as intended on Soroban |
+| `evm-only` | relies on an EVM concept Soroban does not have |
+| `tool` | a sorobench or test-environment limitation |
+
+Each issue gets a plain-language meaning, a suggested fix, and the Solang doc section that backs the category. A failure no rule explains lands in `review`; it is never assumed to be a bug.
+
+To tell a Soroban-specific gap from a general Solang limitation, every GAP test is also run through Solang's front end for the Polkadot target (`other_target` in `results.jsonl`: `compiles`, `fails: …` or `crashes`).
+
+The dictionary is data, not code: edit `dictionary/soroban.toml` and re-explain a finished run without re-running any test:
+
+```console
+$ cargo run --release -- explain                      # reads report/results.jsonl
+$ SOROBENCH_DICTIONARY=my.toml cargo run -- explain   # try a modified dictionary
+```
+
+Before adding a rule, check Solang's Soroban docs (`docs/targets/soroban_*.rst` in the Solang repo): documented behaviour is `documented-*`, not a bug.
+
 ### `list-tests` and `parse` (corpus inspection)
 
 Look at the pinned solc corpus without compiling any contracts (add
