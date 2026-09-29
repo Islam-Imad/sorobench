@@ -8,7 +8,7 @@ use crate::expectation::{parse_calls, semantic_test_builtins};
 use crate::filter::filter_source;
 use crate::testfile;
 
-use super::compile::{compile_soroban, Compiled};
+use super::compile::{compile_sources, Compiled};
 use super::env::{Outcome, SorobanEnv};
 use super::typemap::{resolve_constructor, resolve_overloads, MappedType, ResolvedFn};
 
@@ -20,10 +20,10 @@ pub enum Verdict {
     FailureAsExpected,
     // Values differ.
     Mismatch { expected: String, actual: String },
-    // Expected a value but the call trapped.
-    Trapped,
-    // Expected `FAILURE` but the call returned a value.
-    ExpectedFailure,
+    // Expected a value but the call trapped. Carries the host error / log.
+    Trapped(String),
+    // Expected `FAILURE` but the call returned. Carries what it returned.
+    ExpectedFailure(String),
     // No faithful Soroban equivalent (e.g. an `address` result).
     NoFaithful(String),
     // Not run (value call / builtin / library / constructor).
@@ -38,8 +38,8 @@ impl Verdict {
             Verdict::Pass => "PASS",
             Verdict::FailureAsExpected => "PASS(revert)",
             Verdict::Mismatch { .. } => "MISMATCH",
-            Verdict::Trapped => "TRAP",
-            Verdict::ExpectedFailure => "NO-REVERT",
+            Verdict::Trapped(_) => "TRAP",
+            Verdict::ExpectedFailure(_) => "NO-REVERT",
             Verdict::NoFaithful(_) => "NoFaithful",
             Verdict::Skipped(_) => "SKIP",
             Verdict::Unsupported(_) => "UNSUPPORTED",
@@ -53,14 +53,18 @@ impl Verdict {
     pub fn is_fail(&self) -> bool {
         matches!(
             self,
-            Verdict::Mismatch { .. } | Verdict::Trapped | Verdict::ExpectedFailure
+            Verdict::Mismatch { .. } | Verdict::Trapped(_) | Verdict::ExpectedFailure(_)
         )
     }
 
     pub fn detail(&self) -> String {
         match self {
             Verdict::Mismatch { expected, actual } => format!("expected {expected}, got {actual}"),
-            Verdict::NoFaithful(r) | Verdict::Skipped(r) | Verdict::Unsupported(r) => r.clone(),
+            Verdict::Trapped(r)
+            | Verdict::ExpectedFailure(r)
+            | Verdict::NoFaithful(r)
+            | Verdict::Skipped(r)
+            | Verdict::Unsupported(r) => r.clone(),
             _ => String::new(),
         }
     }
@@ -93,11 +97,46 @@ pub enum RunReport {
 
 enum Guarded {
     Ok(Box<Compiled>),
-    CleanError(String),
+    CleanError(String, Vec<String>),
     Ice(String),
 }
 
 pub fn run_source(text: &str) -> RunReport {
+    run_source_with_warnings(text).0
+}
+
+/// Like [`run_source`], but also returns Solang's (non-noise) warnings, which
+/// often explain a failure (e.g. `uint8 … will be rounded up to uint32`).
+pub fn run_source_with_warnings(text: &str) -> (RunReport, Vec<String>) {
+    let mut warnings = Vec::new();
+    let report = run_inner(text, &mut warnings);
+    (report, warnings)
+}
+
+/// The test's sources as (resolver name, content), plus the main source name.
+/// A single unnamed source is registered as `test.sol`.
+fn sources_of(file: &testfile::TestFile) -> (Vec<(String, String)>, String) {
+    let name = |n: &str| {
+        if n.is_empty() {
+            "test.sol".to_string()
+        } else {
+            n.to_string()
+        }
+    };
+    let sources = file
+        .sources
+        .iter()
+        .map(|s| (name(&s.name), s.content.clone()))
+        .collect();
+    (sources, name(&file.main_source))
+}
+
+/// Run the EVM-only filter over every source of the test.
+pub fn filter_sources(file: &testfile::TestFile) -> Option<crate::filter::FilterReason> {
+    file.sources.iter().find_map(|s| filter_source(&s.content))
+}
+
+fn run_inner(text: &str, warnings: &mut Vec<String>) -> RunReport {
     let file = match testfile::split(text) {
         Ok(f) => f,
         Err(e) => return RunReport::FrontendError(format!("split: {}", e.message)),
@@ -111,18 +150,32 @@ pub fn run_source(text: &str) -> RunReport {
         Err(e) => return RunReport::FrontendError(format!("parse: {}", e.message)),
     };
 
-    let src = file.main_source_content();
-    let compiled = match compile_guarded(src) {
-        Guarded::Ok(c) => *c,
-        Guarded::Ice(msg) => return RunReport::Crashed(msg),
-        Guarded::CleanError(msg) => {
-            return match filter_source(src) {
+    let (sources, main) = sources_of(&file);
+    let compiled = match compile_guarded(&sources, &main) {
+        Guarded::Ok(c) => {
+            *warnings = c.warnings.clone();
+            *c
+        }
+        // A crash on EVM-only source is excluded like a clean failure would be,
+        // but the crash is kept in the note so it is not lost.
+        Guarded::Ice(msg) => {
+            return match filter_sources(&file) {
+                Some(reason) => RunReport::Filtered {
+                    feature: reason.feature.to_string(),
+                    note: format!("{reason}; also crashed: {msg}"),
+                },
+                None => RunReport::Crashed(msg),
+            }
+        }
+        Guarded::CleanError(msg, w) => {
+            *warnings = w;
+            return match filter_sources(&file) {
                 Some(reason) => RunReport::Filtered {
                     feature: reason.feature.to_string(),
                     note: reason.to_string(),
                 },
                 None => RunReport::Gap(msg),
-            }
+            };
         }
     };
 
@@ -163,15 +216,16 @@ fn deploy(
     Ok(h.register_contract_with_arg_vals(&compiled.wasm, args))
 }
 
-fn compile_guarded(src: &str) -> Guarded {
+fn compile_guarded(sources: &[(String, String)], main: &str) -> Guarded {
     use std::sync::{Arc, Mutex};
 
     // Capture the panic's message *and* its source location from a hook: the
     // unwind payload alone carries only the message (often a bare "not
     // implemented"), while the location is what actually points at solang's gap.
-    // We keep the whole thing verbatim — never trimmed to a first line.
-    let captured: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
-    let sink = Arc::clone(&captured);
+    // The first panic is kept (it is the origin); the text is kept verbatim,
+    // except that machine-specific path prefixes are shortened.
+    let slot: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    let hook_slot = Arc::clone(&slot);
     let prev = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         let msg = panic_payload_message(info.payload());
@@ -179,22 +233,29 @@ fn compile_guarded(src: &str) -> Guarded {
             Some(l) => format!("{msg} (at {}:{}:{})", l.file(), l.line(), l.column()),
             None => msg,
         };
-        if let Ok(mut g) = sink.lock() {
-            *g = Some(full);
+        if let Ok(mut g) = hook_slot.lock() {
+            if g.is_none() {
+                *g = Some(full);
+            }
         }
     }));
-    let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| compile_soroban(src)));
+    let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        compile_sources(sources, main)
+    }));
     std::panic::set_hook(prev);
     match res {
         Ok(Ok(c)) => Guarded::Ok(Box::new(c)),
-        Ok(Err(e)) => Guarded::CleanError(e.to_string()),
+        Ok(Err(e)) => Guarded::CleanError(e.to_string(), e.warnings.clone()),
         Err(payload) => {
-            let msg = captured
+            let msg = slot
                 .lock()
                 .ok()
-                .and_then(|mut g| g.take())
+                .and_then(|g| g.clone())
                 .unwrap_or_else(|| panic_payload_message(payload.as_ref()));
-            Guarded::Ice(format!("solang panicked mid-compile (ICE): {msg}"))
+            Guarded::Ice(format!(
+                "solang panicked mid-compile (ICE): {}",
+                shorten_paths(&msg)
+            ))
         }
     }
 }
@@ -210,6 +271,86 @@ fn panic_payload_message(payload: &(dyn std::any::Any + Send)) -> String {
     } else {
         "non-string panic payload".to_string()
     }
+}
+
+/// Replace pointer-like hex literals (`0x55835f1aa770`) with `0x…`: they
+/// change on every run and would split identical crashes into groups.
+fn mask_addresses(msg: &str) -> String {
+    let b = msg.as_bytes();
+    let mut out = String::with_capacity(msg.len());
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] == b'0' && i + 1 < b.len() && b[i + 1] == b'x' {
+            let mut j = i + 2;
+            while j < b.len() && b[j].is_ascii_hexdigit() {
+                j += 1;
+            }
+            if j - (i + 2) >= 8 {
+                out.push_str("0x…");
+                i = j;
+                continue;
+            }
+        }
+        // Push the whole UTF-8 char starting at i.
+        let ch = msg[i..].chars().next().unwrap();
+        out.push(ch);
+        i += ch.len_utf8();
+    }
+    out
+}
+
+/// Strip machine-specific cargo prefixes from paths in a message, e.g.
+/// `/home/u/.cargo/registry/src/index.crates.io-xxxx/inkwell-0.5.0/src/a.rs`
+/// becomes `inkwell-0.5.0/src/a.rs`, and a git checkout of solang becomes
+/// `solang/src/...`. Keeps messages comparable across machines.
+pub fn shorten_paths(msg: &str) -> String {
+    let mut out = mask_addresses(msg);
+    // `/…/llvm-project/llvm/lib/IR/x.cpp` -> `llvm/lib/IR/x.cpp`
+    while let Some(i) = out.find("/llvm-project/") {
+        let start = out[..i]
+            .rfind(|c: char| c.is_whitespace())
+            .map(|p| p + 1)
+            .unwrap_or(0);
+        out.replace_range(start..i + "/llvm-project/".len(), "");
+    }
+    // `thread 'main' (8705) has overflowed` -> `thread 'main' has overflowed`
+    if let Some(i) = out.find("' (") {
+        if let Some(len) = out[i + 3..].find(')') {
+            if len > 0 && out[i + 3..i + 3 + len].bytes().all(|c| c.is_ascii_digit()) {
+                out.replace_range(i + 1..i + 3 + len + 1, "");
+            }
+        }
+    }
+    for marker in ["/registry/src/", "/git/checkouts/"] {
+        while let Some(i) = out.find(marker) {
+            let start = out[..i]
+                .rfind(|c: char| c.is_whitespace())
+                .map(|p| p + 1)
+                .unwrap_or(0);
+            let after = i + marker.len();
+            let rest = &out[after..];
+            let mut parts = rest.splitn(3, '/');
+            let replacement_and_len = if marker == "/registry/src/" {
+                // index dir, then the crate dir is kept.
+                parts.next().map(|index| (String::new(), index.len() + 1))
+            } else {
+                // `<name>-<hash>/<rev>/` -> `<name>/`
+                match (parts.next(), parts.next()) {
+                    (Some(dir), Some(rev)) => {
+                        let name = dir.rsplit_once('-').map(|(n, _)| n).unwrap_or(dir);
+                        Some((format!("{name}/"), dir.len() + rev.len() + 2))
+                    }
+                    _ => None,
+                }
+            };
+            let Some((replacement, skip)) = replacement_and_len else {
+                break;
+            };
+            let end = (after + skip).min(out.len());
+            out.replace_range(start..end, &replacement);
+        }
+    }
+    out
 }
 
 fn run_call(
@@ -335,17 +476,25 @@ fn compare(
     let expects_failure = call.expectations.failure;
 
     let ret_val = match outcome {
-        Outcome::Trapped => {
+        Outcome::Trapped(reason) => {
             return if expects_failure {
                 Verdict::FailureAsExpected
             } else {
-                Verdict::Trapped
+                Verdict::Trapped(reason)
             };
         }
         Outcome::Returned(v) => v,
     };
     if expects_failure {
-        return Verdict::ExpectedFailure;
+        let what = match resolved.returns.as_slice() {
+            [] => "returned (void) instead of reverting".to_string(),
+            [ret] => match from_val(h.env(), ret_val, &ret.soroban) {
+                Ok(nv) => format!("returned {nv:?} instead of reverting"),
+                Err(_) => "returned a value instead of reverting".to_string(),
+            },
+            _ => "returned a value instead of reverting".to_string(),
+        };
+        return Verdict::ExpectedFailure(what);
     }
 
     // A setup call with no `->`: success = it didn't trap (already known).
@@ -400,5 +549,53 @@ fn compare(
             expected: format!("{expected:?}"),
             actual: format!("{actual:?}"),
         }
+    }
+}
+
+#[cfg(test)]
+mod diagnostics_tests {
+    use super::{mask_addresses, shorten_paths};
+    use crate::harness::isolate::crash_summary;
+
+    #[test]
+    fn shortens_registry_and_git_paths() {
+        let m = "panicked at /home/u/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inkwell-0.5.0/src/values/enums.rs:325:13: x";
+        assert_eq!(
+            shorten_paths(m),
+            "panicked at inkwell-0.5.0/src/values/enums.rs:325:13: x"
+        );
+        let g =
+            "at /root/.cargo/git/checkouts/solang-2f1b0a9c3d/e6289eb/src/sema/yul/builtin.rs:25:32";
+        assert_eq!(shorten_paths(g), "at solang/src/sema/yul/builtin.rs:25:32");
+        let l = "sorobench: /home/runner/work/solang-llvm/solang-llvm/llvm-project/llvm/lib/IR/Instructions.cpp:631: x";
+        assert_eq!(
+            shorten_paths(l),
+            "sorobench: llvm/lib/IR/Instructions.cpp:631: x"
+        );
+        assert_eq!(
+            shorten_paths("thread 'main' (8705) has overflowed its stack"),
+            "thread 'main' has overflowed its stack"
+        );
+    }
+
+    #[test]
+    fn masks_pointer_addresses_only() {
+        assert_eq!(
+            mask_addresses("address: 0x55835f1aa770, value 0x20"),
+            "address: 0x…, value 0x20"
+        );
+    }
+
+    #[test]
+    fn crash_summary_picks_the_informative_line() {
+        let panic =
+            "noise\nthread 'main' panicked at src/a.rs:1:2:\nboom\nnote: run with RUST_BACKTRACE";
+        assert_eq!(
+            crash_summary(panic),
+            "thread 'main' panicked at src/a.rs:1:2: | boom"
+        );
+        let llvm = "x\nsorobench: Instructions.cpp:631: void llvm::CallInst::init(): Assertion `ok' failed.\n";
+        assert!(crash_summary(llvm).contains("Assertion"));
+        assert_eq!(crash_summary("a\nb\nc\nd"), "b | c | d");
     }
 }

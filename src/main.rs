@@ -369,17 +369,39 @@ fn isolate_one(
     rel: String,
     timeout: std::time::Duration,
 ) -> sorobench::report::FileReport {
-    use sorobench::harness::{panic_message, run_isolated_timeout, Exit};
+    use sorobench::harness::{crash_summary, run_isolated_timeout, shorten_paths, Exit};
     use sorobench::report::{Bucket, FileReport, ReportKind};
 
-    // Fold a captured panic message onto a default crash description, so the
-    // report shows *what* the child panicked with rather than only "signal N".
-    let with_panic = |default: String, stderr: &str| match panic_message(stderr) {
-        Some(msg) => format!("{default}: {msg}"),
-        None => default,
-    };
-
     let timeout_secs = timeout.as_secs();
+
+    // A crash or timeout on EVM-only source is excluded, like a clean failure
+    // on that source would be; the crash/timeout is kept in the detail.
+    let excluded = |rel: String, kind: ReportKind, bucket: Bucket, detail: String| {
+        let filtered = std::fs::read_to_string(abs)
+            .ok()
+            .and_then(|t| sorobench::testfile::split(&t).ok())
+            .and_then(|f| sorobench::harness::filter_sources(&f));
+        match filtered {
+            Some(reason) => FileReport::synthetic(
+                rel,
+                ReportKind::Filtered,
+                Bucket::Filtered,
+                format!("{}: {reason}; also {detail}", reason.feature),
+            ),
+            None => FileReport::synthetic(rel, kind, bucket, detail),
+        }
+    };
+    // Fold what the child printed (panic message, LLVM assertion, stack
+    // overflow) onto the crash description, so the report shows *why* it died
+    // rather than only "signal N".
+    let with_stderr = |head: String, stderr: &str| {
+        let tail = shorten_paths(&crash_summary(stderr));
+        if tail.is_empty() {
+            head
+        } else {
+            format!("{head}: {tail}")
+        }
+    };
     let iso = match run_isolated_timeout(exe, ["exec-one", abs], timeout) {
         Ok(iso) => iso,
         Err(e) => {
@@ -405,23 +427,23 @@ fn isolate_one(
                 format!("exec-one produced no valid record: {e}"),
             ),
         },
-        Exit::Timeout => FileReport::synthetic(
+        Exit::Timeout => excluded(
             rel,
             ReportKind::TimedOut,
             Bucket::Timeout,
             format!("exceeded {timeout_secs}s"),
         ),
-        Exit::Signal(sig) => FileReport::synthetic(
+        Exit::Signal(sig) => excluded(
             rel,
             ReportKind::Crashed,
             Bucket::Crash,
-            with_panic(format!("killed by signal {sig}"), &iso.stderr),
+            with_stderr(format!("killed by signal {sig}"), &iso.stderr),
         ),
-        Exit::Code(n) => FileReport::synthetic(
+        Exit::Code(n) => excluded(
             rel,
             ReportKind::Crashed,
             Bucket::Crash,
-            with_panic(format!("exec-one exited {n} without a record"), &iso.stderr),
+            with_stderr(format!("exec-one exited {n} without a record"), &iso.stderr),
         ),
         Exit::Unknown => FileReport::synthetic(
             rel,
@@ -438,6 +460,9 @@ fn isolate_one(
 fn print_file_report(r: &sorobench::report::FileReport) -> (usize, usize, usize) {
     use sorobench::report::ReportKind;
 
+    for w in &r.warnings {
+        println!("  warning: {w}");
+    }
     match r.report {
         ReportKind::FrontendError => {
             println!("  FRONTEND-ERROR: {}", r.detail);
@@ -518,7 +543,7 @@ fn run_one_json(arg: Option<&str>) -> ExitCode {
 /// it is not meant to be invoked directly.
 #[cfg(feature = "harness")]
 fn exec_one_json(arg: Option<&str>) -> ExitCode {
-    use sorobench::harness::run_source;
+    use sorobench::harness::run_source_with_warnings;
     use sorobench::report::FileReport;
 
     let Some(path) = arg else {
@@ -527,7 +552,12 @@ fn exec_one_json(arg: Option<&str>) -> ExitCode {
     };
 
     let report = match std::fs::read_to_string(path) {
-        Ok(text) => FileReport::from_run(path.to_string(), &run_source(&text)),
+        Ok(text) => {
+            let (run, warnings) = run_source_with_warnings(&text);
+            let mut r = FileReport::from_run(path.to_string(), &run);
+            r.warnings = warnings;
+            r
+        }
         Err(e) => FileReport::synthetic(
             path.to_string(),
             sorobench::report::ReportKind::FrontendError,

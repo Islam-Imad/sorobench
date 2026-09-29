@@ -17,11 +17,34 @@ pub struct Compiled {
     // The resolved `Namespace` — the source of function export names and
     // param/return types for the decoder.
     pub ns: Namespace,
+    // Solang's warnings (deduplicated, noise removed). They can explain
+    // behaviour differences, e.g. integer widths rounded up on Soroban.
+    pub warnings: Vec<String>,
 }
 
 pub struct CompileError {
     pub messages: Vec<String>,
     pub ns: Namespace,
+    pub warnings: Vec<String>,
+}
+
+/// Warnings that appear in nearly every test and explain nothing.
+fn is_noise(msg: &str) -> bool {
+    msg.starts_with("storage type not specified")
+        || msg.starts_with("function can be declared")
+        || msg.starts_with("function parameter")
+        || msg.contains("has never been used")
+        || msg.contains("has been assigned, but never read")
+}
+
+fn collect_warnings(ns: &Namespace) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for d in ns.diagnostics.iter() {
+        if d.level == Level::Warning && !is_noise(&d.message) && !out.contains(&d.message) {
+            out.push(d.message.clone());
+        }
+    }
+    out
 }
 
 impl fmt::Display for CompileError {
@@ -41,9 +64,18 @@ impl fmt::Debug for CompileError {
 }
 
 pub fn compile_soroban(src: &str) -> Result<Compiled, CompileError> {
-    let file = OsStr::new("test.sol");
+    compile_sources(&[("test.sol".to_string(), src.to_string())], "test.sol")
+}
+
+/// Compile a (possibly multi-source) test. Every source is registered with the
+/// file resolver under its `==== Source: NAME ====` name, so `import "NAME";`
+/// resolves; `main` is the source compiled (solc's last source).
+pub fn compile_sources(sources: &[(String, String)], main: &str) -> Result<Compiled, CompileError> {
+    let file = OsStr::new(main);
     let mut cache = FileResolver::default();
-    cache.set_file_contents("test.sol", src.to_string());
+    for (name, content) in sources {
+        cache.set_file_contents(name, content.clone());
+    }
 
     let opts = Options {
         log_runtime_errors: true,
@@ -58,6 +90,7 @@ pub fn compile_soroban(src: &str) -> Result<Compiled, CompileError> {
         vec!["sorobench".to_string()],
         "0.0.1",
     );
+    let warnings = collect_warnings(&ns);
 
     if ns.diagnostics.any_errors() || results.is_empty() {
         let messages = ns
@@ -66,7 +99,11 @@ pub fn compile_soroban(src: &str) -> Result<Compiled, CompileError> {
             .filter(|d| d.level == Level::Error)
             .map(|d| d.message.clone())
             .collect();
-        return Err(CompileError { messages, ns });
+        return Err(CompileError {
+            messages,
+            ns,
+            warnings,
+        });
     }
 
     // solc's convention: the LAST contract in the file is the one under test.
@@ -87,5 +124,6 @@ pub fn compile_soroban(src: &str) -> Result<Compiled, CompileError> {
         all_wasm,
         main_contract,
         ns,
+        warnings,
     })
 }

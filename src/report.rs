@@ -107,6 +107,10 @@ pub struct FileReport {
     pub detail: String,
     #[serde(default)]
     pub calls: Vec<CallReport>,
+    /// Solang's compiler warnings for this test (noise removed); they often
+    /// explain a failure, e.g. an integer width rounded up on Soroban.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub warnings: Vec<String>,
 }
 
 impl FileReport {
@@ -120,6 +124,7 @@ impl FileReport {
             other: 0,
             detail,
             calls: Vec::new(),
+            warnings: Vec::new(),
         }
     }
 }
@@ -227,6 +232,7 @@ impl FileReport {
             other,
             detail,
             calls,
+            warnings: Vec::new(),
         }
     }
 }
@@ -416,21 +422,33 @@ fn section(s: &mut String, title: &str, reports: &[FileReport], bucket: Bucket, 
     }
     let _ = writeln!(s, "## {} — {} file(s)\n", title, hits.len());
     for r in hits.iter().take(limit) {
-        // Prefer a failing call's detail; else the file-level detail.
+        // Prefer a real failure (mismatch / trap / no-revert), then any other
+        // non-passing call with a detail, then the file-level detail.
+        let is_fail = |v: &str| matches!(v, "MISMATCH" | "TRAP" | "NO-REVERT");
         let detail = r
             .calls
             .iter()
-            .find(|c| c.verdict != "PASS" && c.verdict != "PASS(revert)" && !c.detail.is_empty())
-            .map(|c| format!("{}: {}", c.verdict, c.detail))
+            .find(|c| is_fail(&c.verdict))
+            .or_else(|| {
+                r.calls.iter().find(|c| {
+                    c.verdict != "PASS" && c.verdict != "PASS(revert)" && !c.detail.is_empty()
+                })
+            })
+            .map(|c| {
+                if c.detail.is_empty() {
+                    format!("{} `{}`", c.verdict, c.sig)
+                } else {
+                    format!("{} `{}`: {}", c.verdict, c.sig, c.detail)
+                }
+            })
             .unwrap_or_else(|| r.detail.clone());
-        let detail = detail.replace('\n', " ");
-        let detail = if detail.len() > 160 {
-            // Truncate on a char boundary — crash details carry arbitrary text.
-            let end = (0..=160)
-                .rev()
-                .find(|&i| detail.is_char_boundary(i))
-                .unwrap();
-            format!("{}…", &detail[..end])
+        let mut detail = detail.replace('\n', " ");
+        if !r.warnings.is_empty() {
+            detail.push_str(&format!(" [warning: {}]", r.warnings.join("; ")));
+        }
+        let detail = if detail.chars().count() > 300 {
+            let cut: String = detail.chars().take(300).collect();
+            format!("{cut}…")
         } else {
             detail
         };

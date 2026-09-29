@@ -346,6 +346,24 @@ Whole-file (the test cannot run at all):
 | `UNSUPPORTED` | a whole-file limit (e.g. the constructor needs args) |
 | `(no // ---- block)` | the file has no expectations to run |
 
+#### Failure details
+
+Every failure keeps the information needed to explain it:
+
+| Result | Detail recorded |
+|---|---|
+| `TRAP` | the Soroban host error, plus any `runtime_error` the contract logged, e.g. `Error(Context, InvalidAction); log: runtime_error: math overflow in test.sol:3:74-79` |
+| `NO-REVERT` | what the call returned instead of reverting, e.g. `returned Int(300) instead of reverting` |
+| `CRASHED` (in-process panic) | panic location and message, e.g. `panicked at solang/src/sema/yul/builtin.rs:25:32: not implemented` |
+| `CRASHED` (signal) | the relevant stderr line: LLVM assertion, stack overflow, or Rust panic |
+| any | Solang's non-noise compiler warnings (`warnings` in `results.jsonl`), e.g. integer widths rounded up on Soroban |
+
+Paths are shortened (`inkwell-0.5.0/src/…`, `solang/src/…`, `llvm/lib/…`) and pointer addresses masked, so identical crashes produce identical text on any machine.
+
+A crash or timeout on source that uses an EVM-only feature is reported as `FILTERED`, with the crash kept in the detail (`…; also crashed: …`), so it is excluded from the pass rate without being lost.
+
+Multi-source tests (`==== Source: NAME ====`) are compiled with every source registered under its name, so imports resolve.
+
 ### `list-tests` and `parse` (corpus inspection)
 
 Look at the pinned solc corpus without compiling any contracts (add

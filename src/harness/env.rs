@@ -3,19 +3,21 @@ use soroban_sdk::{vec, Address, ConstructorArgs, Env, Symbol, Val};
 
 pub enum Outcome {
     Returned(Val),
-    Trapped,
+    /// The invocation failed. Carries the host error and any runtime-error
+    /// log lines the contract emitted during the call.
+    Trapped(String),
 }
 
 impl Outcome {
     pub fn returned(&self) -> Option<Val> {
         match self {
             Outcome::Returned(v) => Some(*v),
-            Outcome::Trapped => None,
+            Outcome::Trapped(_) => None,
         }
     }
 
     pub fn is_trap(&self) -> bool {
-        matches!(self, Outcome::Trapped)
+        matches!(self, Outcome::Trapped(_))
     }
 }
 
@@ -114,13 +116,58 @@ impl SorobanEnv {
         }
         // To avoid running out of fuel
         self.env.cost_estimate().budget().reset_unlimited();
-        match self
+        let logs_before = self.env.logs().all().len();
+        let reason = match self
             .env
             .try_invoke_contract::<Val, Val>(addr, &func, args_soroban)
         {
-            Ok(Ok(v)) => Outcome::Returned(v),
-            _ => Outcome::Trapped,
+            Ok(Ok(v)) => return Outcome::Returned(v),
+            Ok(Err(_)) => "return value conversion failed".to_string(),
+            Err(Ok(err)) => format!("{err:?}"),
+            Err(Err(_)) => "invoke error".to_string(),
+        };
+        let logs: Vec<String> = self
+            .env
+            .logs()
+            .all()
+            .into_iter()
+            .skip(logs_before)
+            .filter(|l| l.to_ascii_lowercase().contains("error"))
+            .take(3)
+            .map(|l| shorten(&log_data(&l), 300))
+            .collect();
+        if logs.is_empty() {
+            Outcome::Trapped(reason)
+        } else {
+            Outcome::Trapped(format!("{reason}; log: {}", logs.join(" | ")))
         }
+    }
+}
+
+/// The payload of a diagnostic-event log line: the text inside `data:"…"`,
+/// e.g. `runtime_error: math overflow in test.sol:3:74-79`. Falls back to the
+/// whole line.
+fn log_data(line: &str) -> String {
+    let Some(start) = line.find("data:\"") else {
+        return line.to_string();
+    };
+    let body = &line[start + 6..];
+    let body = body.strip_suffix('"').unwrap_or(body);
+    body.replace("\\n", " ")
+        .trim()
+        .trim_end_matches(',')
+        .trim()
+        .to_string()
+}
+
+/// One line, at most `max` chars (char-boundary safe).
+pub(crate) fn shorten(s: &str, max: usize) -> String {
+    let one: String = s.split_whitespace().collect::<Vec<_>>().join(" ");
+    if one.chars().count() > max {
+        let cut: String = one.chars().take(max).collect();
+        format!("{cut}…")
+    } else {
+        one
     }
 }
 
