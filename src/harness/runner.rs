@@ -180,9 +180,37 @@ fn run_inner(text: &str, warnings: &mut Vec<String>) -> RunReport {
     };
 
     let mut h = SorobanEnv::new();
-    let addr = match deploy(&mut h, &compiled, &calls) {
-        Ok(a) => a,
-        Err(msg) => return RunReport::Unsupported(msg),
+    let deployed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        deploy(&mut h, &compiled, &calls)
+    }));
+    let addr = match deployed {
+        Ok(Ok(a)) => a,
+        Ok(Err(msg)) => return RunReport::Unsupported(msg),
+        // Registering the contract (running its constructor) failed on the
+        // host: the contract cannot be deployed, so every call fails.
+        Err(payload) => {
+            let raw = panic_payload_message(payload.as_ref());
+            let raw = raw
+                .split("Event log")
+                .next()
+                .unwrap_or(&raw)
+                .trim()
+                .to_string();
+            let why = shorten_paths(&super::env::shorten(&raw, 300));
+            let msg = format!("contract deployment failed: {why}");
+            let verdicts = calls
+                .iter()
+                .map(|call| CallVerdict {
+                    signature: call.signature.clone(),
+                    verdict: match call.kind {
+                        Kind::Regular if call.expectations.failure => Verdict::FailureAsExpected,
+                        Kind::Regular => Verdict::Trapped(msg.clone()),
+                        _ => Verdict::Skipped("contract deployment failed".into()),
+                    },
+                })
+                .collect();
+            return RunReport::Ran(verdicts);
+        }
     };
 
     let verdicts = calls
@@ -449,12 +477,23 @@ fn args_to_vals(
 ) -> Result<Vec<Val>, String> {
     let mut vals = Vec::with_capacity(items.len());
     for (nv, p) in items.iter().zip(params) {
-        if p.soroban == SorobanType::Address {
+        if contains_address(&p.soroban) {
             return Err("address argument (NoFaithful)".into());
         }
         vals.push(to_val(env, nv, &p.soroban));
     }
     Ok(vals)
+}
+
+/// True if the type is, or contains, an `address` (which has no faithful
+/// Soroban value to build from EVM words).
+fn contains_address(t: &SorobanType) -> bool {
+    match t {
+        SorobanType::Address => true,
+        SorobanType::Vec(inner) => contains_address(inner),
+        SorobanType::Struct(fields) => fields.iter().any(|(_, f)| contains_address(f)),
+        _ => false,
+    }
 }
 
 fn encode_args(

@@ -44,6 +44,8 @@ impl SorobanEnv {
     }
 
     pub fn register_contract(&mut self, contract_wasm: &[u8]) -> Address {
+        // Deploying (and running a constructor) must not run out of budget.
+        self.env.cost_estimate().budget().reset_unlimited();
         #[allow(deprecated)]
         let addr = self.env.register_contract_wasm(None, contract_wasm);
         self.contracts.push(addr.clone());
@@ -54,6 +56,8 @@ impl SorobanEnv {
     where
         A: ConstructorArgs,
     {
+        // Deploying (and running a constructor) must not run out of budget.
+        self.env.cost_estimate().budget().reset_unlimited();
         let addr = self.env.register(contract_wasm, args);
         self.contracts.push(addr.clone());
         addr
@@ -64,6 +68,8 @@ impl SorobanEnv {
         contract_wasm: &[u8],
         args: Vec<Val>,
     ) -> Address {
+        // Deploying (and running a constructor) must not run out of budget.
+        self.env.cost_estimate().budget().reset_unlimited();
         let mut args_soroban = vec![&self.env];
         for arg in args {
             args_soroban.push_back(arg)
@@ -109,6 +115,9 @@ impl SorobanEnv {
         function_name: &str,
         args: Vec<Val>,
     ) -> Outcome {
+        // Reset before building the args too: earlier calls may have used up
+        // the budget, and even `Symbol::new` / `push_back` are metered.
+        self.env.cost_estimate().budget().reset_unlimited();
         let func = Symbol::new(&self.env, function_name);
         let mut args_soroban = vec![&self.env];
         for arg in args {
@@ -117,14 +126,33 @@ impl SorobanEnv {
         // To avoid running out of fuel
         self.env.cost_estimate().budget().reset_unlimited();
         let logs_before = self.env.logs().all().len();
-        let reason = match self
-            .env
-            .try_invoke_contract::<Val, Val>(addr, &func, args_soroban)
-        {
-            Ok(Ok(v)) => return Outcome::Returned(v),
-            Ok(Err(_)) => "return value conversion failed".to_string(),
-            Err(Ok(err)) => format!("{err:?}"),
-            Err(Err(_)) => "invoke error".to_string(),
+        // Some host errors (e.g. `Error(Budget, ExceededLimit)`) are escalated
+        // to a panic by the SDK instead of being returned; they are still a
+        // failed invocation, not a crash of the harness.
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            self.env
+                .try_invoke_contract::<Val, Val>(addr, &func, args_soroban)
+        }));
+        let reason = match result {
+            Ok(Ok(Ok(v))) => return Outcome::Returned(v),
+            Ok(Ok(Err(_))) => "return value conversion failed".to_string(),
+            Ok(Err(Ok(err))) => format!("{err:?}"),
+            Ok(Err(Err(_))) => "invoke error".to_string(),
+            Err(payload) => {
+                let msg = payload
+                    .downcast_ref::<String>()
+                    .cloned()
+                    .or_else(|| payload.downcast_ref::<&str>().map(|s| s.to_string()))
+                    .unwrap_or_else(|| "host panicked".to_string());
+                // Keep only the error itself, not the event log that follows.
+                let msg = msg
+                    .split("Event log")
+                    .next()
+                    .unwrap_or(&msg)
+                    .trim()
+                    .to_string();
+                return Outcome::Trapped(shorten(&format!("host panicked: {msg}"), 300));
+            }
         };
         let logs: Vec<String> = self
             .env
@@ -148,6 +176,12 @@ impl SorobanEnv {
 /// e.g. `runtime_error: math overflow in test.sol:3:74-79`. Falls back to the
 /// whole line.
 fn log_data(line: &str) -> String {
+    // `data:["VM call trapped with HostError", f, Error(Value, InvalidInput)]`
+    if let Some(start) = line.find("data:[") {
+        let body = &line[start + 6..];
+        let body = body.rfind(']').map(|end| &body[..end]).unwrap_or(body);
+        return body.replace('"', "").trim().to_string();
+    }
     let Some(start) = line.find("data:\"") else {
         return line.to_string();
     };
@@ -168,6 +202,25 @@ pub(crate) fn shorten(s: &str, max: usize) -> String {
         format!("{cut}…")
     } else {
         one
+    }
+}
+
+#[cfg(test)]
+mod log_tests {
+    use super::log_data;
+
+    #[test]
+    fn extracts_both_log_payload_forms() {
+        let a = r#"[Diagnostic Event] contract:C, topics:[log], data:"runtime_error: math overflow in test.sol:3:74-79,\n""#;
+        assert_eq!(
+            log_data(a),
+            "runtime_error: math overflow in test.sol:3:74-79"
+        );
+        let b = r#"[Failed Diagnostic Event (not emitted)] contract:C, topics:[log], data:["VM call trapped with HostError", f, Error(Value, InvalidInput)]"#;
+        assert_eq!(
+            log_data(b),
+            "VM call trapped with HostError, f, Error(Value, InvalidInput)"
+        );
     }
 }
 
