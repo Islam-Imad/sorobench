@@ -1,7 +1,9 @@
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Address, IntoVal, Val};
 
-use super::{compile_soroban, run_isolated, run_source, Exit, Outcome, RunReport, SorobanEnv};
+use super::{
+    compile_soroban, panic_message, run_isolated, run_source, Exit, Outcome, RunReport, SorobanEnv,
+};
 use crate::decoder::val::{from_val, to_val};
 use crate::decoder::NativeValue;
 use crate::decoder::SorobanType::{U32, U64};
@@ -160,7 +162,10 @@ fn probe_deploy_with_constructor_args() {
     let arg = to_val(h.env(), &NativeValue::uint_u64(7), &U64);
     let addr = h.register_contract_with_arg_vals(&c.wasm, vec![arg]);
     let v = h.invoke_contract(&addr, "get", vec![]);
-    assert_eq!(from_val(h.env(), v, &U64).unwrap(), NativeValue::uint_u64(7));
+    assert_eq!(
+        from_val(h.env(), v, &U64).unwrap(),
+        NativeValue::uint_u64(7)
+    );
 }
 
 #[test]
@@ -181,4 +186,33 @@ fn run_source_deploys_parameterized_constructor() {
         .find(|v| v.signature.starts_with("get"))
         .expect("get() verdict");
     assert!(get.verdict.is_pass(), "get() verdict = {:?}", get.verdict);
+}
+
+#[test]
+fn panic_message_keeps_full_multiline_body() {
+    // A multi-line panic (an assert_eq! dump) must NOT be cut at the first line.
+    let stderr = "\
+thread 'main' panicked at src/lib.rs:10:5:
+assertion `left == right` failed
+  left: 3
+  right: 5
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+";
+    let msg = panic_message(stderr).expect("message");
+    assert_eq!(
+        msg,
+        "assertion `left == right` failed\n  left: 3\n  right: 5"
+    );
+}
+
+#[test]
+fn panic_message_single_line() {
+    let stderr = "thread 'main' panicked at src/x.rs:1:1:\nnot implemented\nnote: run with ...\n";
+    assert_eq!(panic_message(stderr).as_deref(), Some("not implemented"));
+}
+
+#[test]
+fn panic_message_none_when_silent() {
+    // A raw SIGSEGV writes nothing — caller keeps its signal-based default.
+    assert_eq!(panic_message(""), None);
 }

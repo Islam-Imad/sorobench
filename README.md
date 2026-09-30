@@ -1,6 +1,6 @@
 # sorobench
 
-📋 **[solang gaps](gap/README.md)** — the clustered solang root-cause TODO list.
+📋 **[solang gaps](ledger/gap.md)** — the clustered solang root-cause TODO list.
 
 Run the [solc](https://github.com/ethereum/solidity) **semantic test suite**
 against [solang](https://github.com/hyperledger-solang/solang)'s **Soroban**
@@ -281,7 +281,7 @@ concatenated `detail` on `;`, deduping, and canonicalizing identifiers/numbers s
 e.g. `conversion to bytes1 …` and `conversion to bytes3 …` share one cause. Files
 whose failure is a missing `import` (a `file not found` — sorobench feeds solang
 one source at a time) are grouped under a single **harness** cause and flagged, so
-they never inflate the real solang list. The result lands in `gap/README.md`
+they never inflate the real solang list. The result lands in `ledger/gap.md`
 (a "major gaps" table + the files under each cause) and the top causes print to
 the console. Today: 483 GAP files → 78 solang root causes + 52 multi-file-import
 files; the biggest by far is *"Soroban external functions can return at most one

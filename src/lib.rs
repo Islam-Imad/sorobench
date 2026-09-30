@@ -15,4 +15,10 @@ pub mod harness;
 pub mod report;
 
 #[cfg(feature = "gaps")]
+pub mod ledger;
+
+#[cfg(feature = "gaps")]
 pub mod gaps;
+
+#[cfg(feature = "gaps")]
+pub mod crashes;

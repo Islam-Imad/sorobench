@@ -16,6 +16,7 @@ fn main() -> ExitCode {
         Some("exec-one") => exec_one_json(args.get(2).map(String::as_str)),
         Some("run-all") => run_all(args.get(2).map(String::as_str)),
         Some("gaps") => gaps_cmd(args.get(2).map(String::as_str)),
+        Some("crashes") => crashes_cmd(args.get(2).map(String::as_str)),
         Some("-h") | Some("--help") | Some("help") => {
             usage(&mut std::io::stdout().lock());
             ExitCode::SUCCESS
@@ -368,8 +369,15 @@ fn isolate_one(
     rel: String,
     timeout: std::time::Duration,
 ) -> sorobench::report::FileReport {
-    use sorobench::harness::{run_isolated_timeout, Exit};
+    use sorobench::harness::{panic_message, run_isolated_timeout, Exit};
     use sorobench::report::{Bucket, FileReport, ReportKind};
+
+    // Fold a captured panic message onto a default crash description, so the
+    // report shows *what* the child panicked with rather than only "signal N".
+    let with_panic = |default: String, stderr: &str| match panic_message(stderr) {
+        Some(msg) => format!("{default}: {msg}"),
+        None => default,
+    };
 
     let timeout_secs = timeout.as_secs();
     let iso = match run_isolated_timeout(exe, ["exec-one", abs], timeout) {
@@ -407,13 +415,13 @@ fn isolate_one(
             rel,
             ReportKind::Crashed,
             Bucket::Crash,
-            format!("killed by signal {sig}"),
+            with_panic(format!("killed by signal {sig}"), &iso.stderr),
         ),
         Exit::Code(n) => FileReport::synthetic(
             rel,
             ReportKind::Crashed,
             Bucket::Crash,
-            format!("exec-one exited {n} without a record"),
+            with_panic(format!("exec-one exited {n} without a record"), &iso.stderr),
         ),
         Exit::Unknown => FileReport::synthetic(
             rel,
@@ -704,13 +712,13 @@ fn gaps_cmd(arg: Option<&str>) -> ExitCode {
     let real_causes = causes.iter().filter(|c| !c.harness_noise).count();
 
     // Write the ledger.
-    let out_dir = PathBuf::from("gap");
+    let out_dir = PathBuf::from("ledger");
     if let Err(e) = std::fs::create_dir_all(&out_dir) {
         eprintln!("error: creating {}: {e}", out_dir.display());
         return ExitCode::FAILURE;
     }
     let md = gaps::render_markdown(&causes, source);
-    let md_path = out_dir.join("README.md");
+    let md_path = out_dir.join("gap.md");
     if let Err(e) = std::fs::write(&md_path, &md) {
         eprintln!("error: writing {}: {e}", md_path.display());
         return ExitCode::FAILURE;
@@ -739,6 +747,72 @@ fn gaps_cmd(_arg: Option<&str>) -> ExitCode {
     ExitCode::FAILURE
 }
 
+#[cfg(feature = "gaps")]
+fn crashes_cmd(arg: Option<&str>) -> ExitCode {
+    use sorobench::{crashes, gaps};
+
+    let source = arg.unwrap_or("report/results.jsonl");
+    let text = match std::fs::read_to_string(source) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("error: reading {source}: {e}");
+            eprintln!("hint: run `sorobench run-all` first, or pass the path to a results.jsonl");
+            return ExitCode::FAILURE;
+        }
+    };
+    let reports = match gaps::read_reports(&text) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("error: parsing {source}: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let causes = crashes::cluster(&reports);
+    let total: usize = causes.iter().map(|c| c.files.len()).sum();
+    let noise: usize = causes
+        .iter()
+        .filter(|c| c.harness_noise)
+        .map(|c| c.files.len())
+        .sum();
+    let real_causes = causes.iter().filter(|c| !c.harness_noise).count();
+
+    // Write the ledger.
+    let out_dir = PathBuf::from("ledger");
+    if let Err(e) = std::fs::create_dir_all(&out_dir) {
+        eprintln!("error: creating {}: {e}", out_dir.display());
+        return ExitCode::FAILURE;
+    }
+    let md = crashes::render_markdown(&causes, source);
+    let md_path = out_dir.join("crash.md");
+    if let Err(e) = std::fs::write(&md_path, &md) {
+        eprintln!("error: writing {}: {e}", md_path.display());
+        return ExitCode::FAILURE;
+    }
+
+    // Console ledger — the same "crashes" table, top 30.
+    println!("sorobench crashes — solang crash message ledger");
+    println!("  source:         {source}");
+    println!("  CRASH files:    {total}");
+    println!("  crash messages: {real_causes} solang + {noise} file(s) plumbing (harness)");
+    println!("\ncrashes (files  message):");
+    for c in causes.iter().take(30) {
+        let tag = if c.harness_noise { "  [harness]" } else { "" };
+        println!("  {:>4}  {}{tag}", c.files.len(), c.canon);
+    }
+    if causes.len() > 30 {
+        println!("  … and {} more message(s)", causes.len() - 30);
+    }
+    println!("\nwrote {}", md_path.display());
+    ExitCode::SUCCESS
+}
+
+#[cfg(not(feature = "gaps"))]
+fn crashes_cmd(_arg: Option<&str>) -> ExitCode {
+    eprintln!("`crashes` requires building with --features gaps");
+    ExitCode::FAILURE
+}
+
 fn usage(w: &mut impl std::io::Write) {
     let _ = writeln!(
         w,
@@ -764,7 +838,11 @@ fn usage(w: &mut impl std::io::Write) {
                                 subprocess under a 10s timeout, and write\n    \
                                 report/results.jsonl + report/summary.md.\n    \
              gaps [RESULTS]     Cluster the GAP bucket of a finished run into a\n    \
-                                solang root-cause TODO list; write gap/README.md.\n    \
+                                solang root-cause TODO list; write ledger/gap.md.\n    \
+                                Reads report/results.jsonl by default — no compile,\n    \
+                                so it runs standalone (--features gaps).\n    \
+             crashes [RESULTS]  Cluster the CRASH bucket of a finished run by\n    \
+                                unique crash message; write ledger/crash.md.\n    \
                                 Reads report/results.jsonl by default — no compile,\n    \
                                 so it runs standalone (--features gaps).\n    \
              help               Show this message."
