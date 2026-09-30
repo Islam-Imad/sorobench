@@ -358,6 +358,15 @@ pub fn shorten_paths(msg: &str) -> String {
             .unwrap_or(0);
         out.replace_range(start..i + "/llvm-project/".len(), "");
     }
+    // A local Solang checkout (e.g. CI's `/__w/solang/solang/solang/src/x.rs`)
+    // -> `solang/src/x.rs`, the same text a git dependency produces.
+    while let Some(i) = out.find("/solang/src/") {
+        let start = out[..i]
+            .rfind(|c: char| c.is_whitespace())
+            .map(|p| p + 1)
+            .unwrap_or(0);
+        out.replace_range(start..i + 1, "");
+    }
     // `thread 'main' (8705) has overflowed` -> `thread 'main' has overflowed`
     if let Some(i) = out.find("' (") {
         if let Some(len) = out[i + 3..].find(')') {
@@ -623,6 +632,10 @@ mod diagnostics_tests {
         let g =
             "at /root/.cargo/git/checkouts/solang-2f1b0a9c3d/e6289eb/src/sema/yul/builtin.rs:25:32";
         assert_eq!(shorten_paths(g), "at solang/src/sema/yul/builtin.rs:25:32");
+        assert_eq!(
+            shorten_paths("panicked at /__w/solang/solang/solang/src/codegen/optimize/constant_folding.rs:730:14: x"),
+            "panicked at solang/src/codegen/optimize/constant_folding.rs:730:14: x"
+        );
         let l = "sorobench: /home/runner/work/solang-llvm/solang-llvm/llvm-project/llvm/lib/IR/Instructions.cpp:631: x";
         assert_eq!(
             shorten_paths(l),

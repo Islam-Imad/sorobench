@@ -473,6 +473,20 @@ mod tests {
     }
 
     #[test]
+    fn enum_rule_wins_over_integer_rounding() {
+        let d = parse(DEFAULT_DICTIONARY).unwrap();
+        let r: FileReport = serde_json::from_str(
+            r#"{"path":"types/mapping_enum_key_v1.sol","report":"ran","bucket":"HAS_FAIL",
+                "pass":1,"fail":1,"other":0,"detail":"",
+                "calls":[{"sig":"get(uint8)","verdict":"NO-REVERT","detail":"returned Int(0) instead of reverting"}],
+                "warnings":["uint8 is not supported by the Soroban runtime and will be rounded up to uint32"]}"#,
+        )
+        .unwrap();
+        let item = &items(&r)[0];
+        assert_eq!(classify(&d, &r, item).unwrap().id, "enum-range-not-checked");
+    }
+
+    #[test]
     fn narrow_int_detection() {
         assert!(has_narrow_int("g(uint8,uint8)"));
         assert!(has_narrow_int("f(int16)"));

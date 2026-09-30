@@ -31,7 +31,8 @@
 #   bug                    violates Solang's documented behaviour (crash, wrong result)
 #   tool                   a sorobench or test-environment limitation
 #
-# Docs references are relative to the Solang repo.
+# Docs references are relative to the Solang repo. Categories were checked
+# against the Soroban docs of Solang v0.4.0 (docs/targets/soroban_*.rst).
 
 # ─────────────────────────── compile-time gaps ───────────────────────────
 
@@ -39,11 +40,11 @@
 id = "multi-return"
 kind = ["gap"]
 match = ["Soroban external functions can return at most one value"]
-category = "soroban-gap"
+category = "documented-unsupported"
 title = "Multiple return values from public functions"
-meaning = "Solidity functions can return several values at once (`returns (uint, bool)`). Solang rejects this for public and external functions on Soroban, because a Soroban contract function returns a single value. The same code compiles for Solang's other targets, and the limitation is not mentioned in Solang's Soroban documentation."
-suggestion = "Return the values packed into one Soroban value (a `Vec` or struct-like `Map`) and unpack them on the calling side; at minimum, document the limitation in the support matrix."
-docs = "Not listed in docs/targets/soroban_support_matrix.rst or soroban_language_compatibility.rst."
+meaning = "Solidity functions can return several values at once (`returns (uint, bool)`). On Soroban a contract function returns a single value, and Solang's docs state that external functions return at most one value. The same code compiles for Solang's other targets. This is the single largest reason tests are rejected."
+suggestion = "Return the values packed into one Soroban value (a `Vec` or struct-like `Map`) and unpack them on the calling side."
+docs = "docs/targets/soroban_support_matrix.rst, 'Contract model': external functions return at most one value (documented since v0.4.0)."
 
 [[rule]]
 id = "new-contract"
@@ -53,7 +54,7 @@ category = "documented-unsupported"
 title = "Creating contracts with `new Contract()`"
 meaning = "The test deploys another contract with `new C()`. Solang does not support this syntax on Soroban; contracts must be deployed from an uploaded Wasm hash instead."
 suggestion = "Use the `deployContract(wasm_hash, salt, ...args)` builtin. Supporting `new C()` would require embedding and uploading the child contract's Wasm."
-docs = "docs/targets/soroban_support_matrix.rst, Soroban Features, 'Deploying contracts'."
+docs = "docs/targets/soroban_support_matrix.rst, 'Deploying and upgrading contracts': `new Contract()` not yet supported."
 
 [[rule]]
 id = "value-transfer-uint512"
@@ -90,11 +91,11 @@ docs = "docs/targets/soroban_support_matrix.rst, 'Structs'."
 id = "struct-public-getter"
 kind = ["gap"]
 match = ["is not supported as a Soroban public variable accessor return value"]
-category = "soroban-gap"
+category = "documented-unsupported"
 title = "Public getters for struct state variables"
-meaning = "A `public` state variable of struct type needs an automatically generated getter that returns the struct. Solang rejects this on Soroban, although its docs say structs work as function return values. The same code compiles for other targets."
+meaning = "A `public` state variable of struct type needs an automatically generated getter that returns the struct. Solang's docs state that structs are not yet supported as public state-variable accessor return values on Soroban (user-written functions returning structs do work)."
 suggestion = "Generate the getter the same way as a user-written function returning the struct."
-docs = "docs/targets/soroban_support_matrix.rst, 'Structs' (structs supported as return values; getters not mentioned)."
+docs = "docs/targets/soroban_support_matrix.rst, 'Structs': not yet supported as `public` accessor return values (documented since v0.4.0)."
 
 [[rule]]
 id = "eth-address-literal"
@@ -156,7 +157,7 @@ category = "bug"
 title = "Unsupported type crashes the Soroban encoder/decoder"
 meaning = "The test passes a type across the contract boundary that Solang cannot encode for Soroban (function types, user-defined value types, contract types, …). Solang knows it is unsupported, but raises a panic instead of a compile error. Solang's docs state that unsupported constructs should be rejected with a diagnostic, not crash."
 suggestion = "Turn the panic in `codegen/targets/soroban/encoding.rs` into a sema diagnostic naming the type and location."
-docs = "docs/targets/soroban_language_compatibility.rst, intro (reject rather than miscompile); support matrix, 'Other complex user-defined and composite types': Partial."
+docs = "docs/targets/soroban_language_compatibility.rst, intro (reject rather than miscompile); support matrix, 'Enums and other complex user-defined types'."
 
 [[rule]]
 id = "panic-unsupported-builtin"
@@ -326,9 +327,19 @@ kind = ["mismatch"]
 path = ["builtinFunctions/keccak256", "builtinFunctions/sha256", "builtinFunctions/iterated_keccak256", "cleanup/cleanup_bytes_types_shortening"]
 category = "review"
 title = "Hashes differ (input built with `abi.encodePacked`)"
-meaning = "The hash result differs from the EVM. These tests hash `abi.encodePacked(...)`, which on Soroban encodes host handles, so the input to the hash is different. Separately, Solang's docs list hash builtins as unsupported on Soroban, yet this compiled. Either the input explains it, or the builtin should have been rejected."
-suggestion = "Check whether `keccak256`/`sha256` are meant to be available on Soroban; if not, reject them; if yes, test them on plain `bytes` input."
-docs = "docs/targets/soroban_support_matrix.rst, 'Solidity hash and crypto builtins': Unsupported."
+meaning = "Solang's docs list `keccak256` and `sha256` as supported on Soroban, yet the hash differs from the EVM. All these tests hash the output of `abi.encodePacked(...)`. If `encodePacked` behaves like `abi.encode` on Soroban (host handles instead of bytes), the hash input differs and the hash is correct; if not, the hash itself is wrong. Strong bug candidate until one of the two is confirmed."
+suggestion = "Hash a plain literal (e.g. `keccak256(\"foo\")`) on Soroban and compare with the known EVM value, to tell a hashing bug from an encoding difference."
+docs = "docs/targets/soroban_support_matrix.rst, 'Hash and cryptographic builtins': Supported (since v0.4.0)."
+
+[[rule]]
+id = "enum-range-not-checked"
+kind = ["no-revert"]
+path = ["enum"]
+category = "review"
+title = "Out-of-range enum values are accepted"
+meaning = "The test passes a number that is not a valid value of the enum (e.g. 5 for an enum with 3 members) and expects the call to revert, as Solidity does. On Soroban the call succeeds. Solang's docs list enums as supported, so accepting invalid values is a strong bug candidate. It could also be a consequence of enums crossing the Soroban boundary as plain integers."
+suggestion = "Range-check enum arguments when decoding them in the Soroban dispatcher."
+docs = "docs/targets/soroban_support_matrix.rst, 'Enums and other complex user-defined types': enumerations supported (since v0.4.0)."
 
 [[rule]]
 id = "int-width-overflow"
@@ -399,7 +410,7 @@ category = "tool"
 title = "Block number / timestamp start at 0 in sorobench"
 meaning = "solc's test framework advances the block number and timestamp with every transaction; sorobench's local Soroban environment keeps them at 0. `block.number` and `block.timestamp` are supported by Solang, so this is a test-environment difference."
 suggestion = "sorobench: advance the ledger sequence and timestamp between calls like solc's framework."
-docs = "docs/targets/soroban_support_matrix.rst, 'Soroban utilities' (block.timestamp supported)."
+docs = "docs/targets/soroban_support_matrix.rst, 'Soroban utilities': block.timestamp and block.number supported."
 
 [[rule]]
 id = "deployment-failed"
