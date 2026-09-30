@@ -1,0 +1,24 @@
+ONLY_OTHER	0	0	1	abiEncoderV1/abi_decode_dynamic_array.sol
+COMPILE_FAIL				abiEncoderV1/abi_decode_fixed_arrays.sol
+ONLY_OTHER	0	0	1	abiEncoderV1/abi_decode_static_array.sol
+ONLY_OTHER	0	0	1	abiEncoderV1/abi_decode_static_array_v2.sol
+ONLY_OTHER	0	0	1	abiEncoderV1/abi_decode_trivial.sol
+PASS_ALL	1	0	0	abiEncoderV1/abi_decode_v2.sol
+ONLY_OTHER	0	0	1	abiEncoderV1/abi_decode_v2_calldata.sol
+PASS_ALL	1	0	0	abiEncoderV1/abi_decode_v2_storage.sol
+COMPILE_FAIL				abiEncoderV1/abi_encode.sol
+HAS_FAIL	0	1	0	abiEncoderV1/abi_encode_call.sol
+COMPILE_FAIL				abiEncoderV1/abi_encode_calldata_slice.sol
+COMPILE_FAIL				abiEncoderV1/abi_encode_decode_simple.sol
+COMPILE_FAIL				abiEncoderV1/abi_encode_empty_string.sol
+COMPILE_FAIL				abiEncoderV1/abi_encode_rational.sol
+PASS_ALL	4	0	0	abiEncoderV1/bool_out_of_bounds.sol
+COMPILE_FAIL				abiEncoderV1/byte_arrays.sol
+ONLY_OTHER	0	0	1	abiEncoderV1/calldata_arrays_too_large.sol
+COMPILE_FAIL				abiEncoderV1/calldata_bytes_bytes32_arrays.sol
+COMPILE_FAIL				abiEncoderV1/cleanup/cleanup.sol
+COMPILE_FAIL				abiEncoderV1/decode_slice.sol
+COMPILE_FAIL				abiEncoderV1/dynamic_arrays.sol
+COMPILE_FAIL				abiEncoderV1/dynamic_memory_copy.sol
+PASS_ALL	4	0	0	abiEncoderV1/enums.sol
+ONLY_OTHER	0	0	2	abiEncoderV1/memory_dynamic_array_and_calldata_bytes.sol
