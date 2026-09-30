@@ -164,14 +164,51 @@ fn deploy(
 }
 
 fn compile_guarded(src: &str) -> Guarded {
+    use std::sync::{Arc, Mutex};
+
+    // Capture the panic's message *and* its source location from a hook: the
+    // unwind payload alone carries only the message (often a bare "not
+    // implemented"), while the location is what actually points at solang's gap.
+    // We keep the whole thing verbatim — never trimmed to a first line.
+    let captured: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    let sink = Arc::clone(&captured);
     let prev = std::panic::take_hook();
-    std::panic::set_hook(Box::new(|_| {}));
+    std::panic::set_hook(Box::new(move |info| {
+        let msg = panic_payload_message(info.payload());
+        let full = match info.location() {
+            Some(l) => format!("{msg} (at {}:{}:{})", l.file(), l.line(), l.column()),
+            None => msg,
+        };
+        if let Ok(mut g) = sink.lock() {
+            *g = Some(full);
+        }
+    }));
     let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| compile_soroban(src)));
     std::panic::set_hook(prev);
     match res {
         Ok(Ok(c)) => Guarded::Ok(Box::new(c)),
         Ok(Err(e)) => Guarded::CleanError(e.to_string()),
-        Err(_) => Guarded::Ice("solang panicked mid-compile (ICE)".into()),
+        Err(payload) => {
+            let msg = captured
+                .lock()
+                .ok()
+                .and_then(|mut g| g.take())
+                .unwrap_or_else(|| panic_payload_message(payload.as_ref()));
+            Guarded::Ice(format!("solang panicked mid-compile (ICE): {msg}"))
+        }
+    }
+}
+
+/// Recover the human-readable message from a `catch_unwind` payload. A `panic!`
+/// carries either a `&'static str` or a `String`; anything else has no text we
+/// can print, so we fall back to a default note about the panic type.
+fn panic_payload_message(payload: &(dyn std::any::Any + Send)) -> String {
+    if let Some(s) = payload.downcast_ref::<&str>() {
+        (*s).to_string()
+    } else if let Some(s) = payload.downcast_ref::<String>() {
+        s.clone()
+    } else {
+        "non-string panic payload".to_string()
     }
 }
 

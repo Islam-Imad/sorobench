@@ -94,6 +94,8 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 
 ## Soroban external functions can return at most one value — 192 file(s)
 
+<details><summary>192 file(s)</summary>
+
 - `abiEncoderV1/abi_decode_fixed_arrays.sol`
 - `abiEncoderV1/abi_encode_decode_simple.sol`
 - `abiEncoderV1/byte_arrays.sol`
@@ -287,7 +289,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `viaYul/struct_member_access.sol`
 - `viaYul/tuple_evaluation_order.sol`
 
+</details>
+
 ## file not found 'X' (multi-file import — sorobench limitation, not a solang gap) — 52 file(s) *(sorobench multi-file limitation — not a solang gap)*
+
+<details><summary>52 file(s)</summary>
 
 - `abiEncoderV2/abi_encode_v2_in_function_inherited_in_v1_contract.sol` — file not found 'A'
 - `abiEncoderV2/abi_encode_v2_in_modifier_used_in_v1_contract.sol` — file not found 'A'
@@ -342,7 +348,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `using/using_global_invisible.sol` — file not found 'B'
 - `using/using_global_library.sol` — file not found 'A'
 
+</details>
+
 ## 'X' not found — 19 file(s)
+
+<details><summary>19 file(s)</summary>
 
 - `abiencodedecode/abi_encode_call.sol` — 'length' not found
 - `array/pop/array_pop_isolated.sol` — 'pop' not found
@@ -364,7 +374,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `various/super_alone.sol` — 'super' not found
 - `various/super_parentheses.sol` — 'super' not found
 
+</details>
+
 ## slice not supported yet — 18 file(s)
+
+<details><summary>18 file(s)</summary>
 
 - `abiEncoderV1/abi_encode_calldata_slice.sol`
 - `abiEncoderV1/decode_slice.sol`
@@ -385,7 +399,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `strings/concat/string_concat_different_types.sol`
 - `viaYul/conversion/explicit_string_bytes_calldata_cast.sol`
 
+</details>
+
 ## contract construction is not supported for target soroban — 16 file(s)
+
+<details><summary>16 file(s)</summary>
 
 - `array/reusing_memory.sol`
 - `constructor/evm_exceptions_in_constructor_call_fail.sol`
@@ -404,7 +422,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `various/staticcall_for_view_and_pure.sol`
 - `various/staticcall_for_view_and_pure_pre_byzantium.sol`
 
+</details>
+
 ## conversion to bytesN from uintN not allowed — 14 file(s)
+
+<details><summary>14 file(s)</summary>
 
 - `array/byte_array_transitional_2.sol` — conversion to bytes1 from uint32 not allowed
 - `array/copying/array_copy_storage_storage_static_simple.sol` — conversion to bytes1 from uint32 not allowed
@@ -421,7 +443,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `types/convert_uint_to_fixed_bytes_smaller_size.sol` — conversion to bytes2 from uint32 not allowed
 - `viaYul/storage/packed_storage.sol` — conversion to bytes1 from uint32 not allowed
 
+</details>
+
 ## implicit conversion would truncate from uintN to uintN — 12 file(s)
+
+<details><summary>12 file(s)</summary>
 
 - `functionCall/call_options_overload.sol` — implicit conversion would truncate from uint512 to uint256
 - `functionCall/external_call_value.sol` — implicit conversion would truncate from uint512 to uint256
@@ -436,7 +462,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `various/value_complex.sol` — implicit conversion would truncate from uint512 to uint256
 - `various/value_insane.sol` — implicit conversion would truncate from uint512 to uint256
 
+</details>
+
 ## exponation (**) is not allowed with signed types — 10 file(s)
+
+<details><summary>10 file(s)</summary>
 
 - `exponentiation/literal_base.sol`
 - `expressions/exp_operator_const_signed.sol`
@@ -449,7 +479,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `viaYul/exp_neg.sol`
 - `viaYul/exp_neg_overflow.sol`
 
+</details>
+
 ## type 'X' is not supported as a Soroban public variable accessor return value — 9 file(s)
+
+<details><summary>9 file(s)</summary>
 
 - `array/string_allocation_bug.sol` — type 'struct Sample.s' is not supported as a Soroban public variable accessor return value
 - `array/strings_in_struct.sol` — type 'struct buggystruct.Buggy' is not supported as a Soroban public variable accessor return value
@@ -461,7 +495,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `various/negative_stack_height.sol` — type 'struct C.Invoice' is not supported as a Soroban public variable accessor return value
 - `various/swap_in_storage_overwrite.sol` — type 'struct c.S' is not supported as a Soroban public variable accessor return value
 
+</details>
+
 ## method 'X' does not exist — 8 file(s)
+
+<details><summary>8 file(s)</summary>
 
 - `abiEncoderV2/struct/struct_function.sol` — method 'f' does not exist
 - `functionTypes/struct_with_external_function.sol` — method 'x' does not exist
@@ -472,7 +510,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `structs/struct_storage_to_memory_function_ptr.sol` — method 'f' does not exist
 - `viaYul/copy_struct_invalid_ir_bug.sol` — method 'el' does not exist
 
+</details>
+
 ## fallback function cannot have parameters — 6 file(s)
+
+<details><summary>6 file(s)</summary>
 
 - `fallback/fallback_argument.sol`
 - `fallback/fallback_argument_to_storage.sol`
@@ -481,7 +523,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `fallback/fallback_override_multi.sol`
 - `fallback/fallback_return_data.sol`
 
+</details>
+
 ## number of N bytes cannot be converted to type 'X' — 6 file(s)
+
+<details><summary>6 file(s)</summary>
 
 - `abiEncoderV1/return_dynamic_types_cross_call_advanced.sol` — number of 32 bytes cannot be converted to type 'bytes20'
 - `array/copying/array_copy_target_simple.sol` — number of 8 bytes cannot be converted to type 'bytes17'
@@ -490,7 +536,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `getters/value_types.sol` — number of 4 bytes cannot be converted to type 'bytes1'
 - `viaYul/conversion/explicit_cast_function_call.sol` — number of 4 bytes cannot be converted to type 'bytes32'
 
+</details>
+
 ## Variable 'X' is undefined — 5 file(s)
+
+<details><summary>5 file(s)</summary>
 
 - `array/copying/copy_byte_array_in_struct_to_storage.sol` — Variable 'x' is undefined
 - `calldata/copy_from_calldata_removes_bytes_data.sol` — Variable 'emptyData' is undefined
@@ -498,7 +548,11 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `viaYul/local_variable_without_init.sol` — Variable 'x' is undefined
 - `viaYul/loops/return.sol` — Variable 'a' is undefined
 
+</details>
+
 ## conversion to uintN from bytesN not allowed — 5 file(s)
+
+<details><summary>5 file(s)</summary>
 
 - `abiEncoderV2/struct/struct_simple.sol` — conversion to uint32 from bytes2 not allowed
 - `array/copying/array_copy_target_leftover.sol` — conversion to uint32 from bytes2 not allowed
@@ -506,309 +560,571 @@ A **GAP** is a file solang rejected with a *clean* compile error on portable sou
 - `libraries/internal_library_function_attached_to_fixed_bytes.sol` — conversion to uint32 from bytes2 not allowed
 - `types/convert_fixed_bytes_to_uint_same_min_size.sol` — conversion to uint32 from bytes1 not allowed
 
+</details>
+
 ## contract 'X' does not have a member called 'X' — 4 file(s)
+
+<details><summary>4 file(s)</summary>
 
 - `constants/function_unreferenced.sol` — contract 'B' does not have a member called 'g'
 - `errors/error_selector.sol` — contract 'L' does not have a member called 'E'
 - `libraries/library_enum_as_an_expression.sol` — contract 'Arst' does not have a member called 'Foo'
 - `libraries/library_struct_as_an_expression.sol` — contract 'Arst' does not have a member called 'Foo'
 
+</details>
+
 ## conversion from function() external[] to function() external[] not possible — 4 file(s)
+
+<details><summary>4 file(s)</summary>
 
 - `array/copying/array_of_function_external_storage_to_storage_dynamic.sol`
 - `array/copying/array_of_function_external_storage_to_storage_dynamic_different_mutability.sol`
 - `array/copying/function_type_array_to_storage.sol`
 - `structs/function_type_copy.sol`
 
+</details>
+
 ## conversion from uintN[N] to uintN[] not possible — 4 file(s)
+
+<details><summary>4 file(s)</summary>
 
 - `array/copying/array_copy_calldata_storage.sol` — conversion from uint256[9] to uint256[] not possible
 - `array/copying/array_copy_memory_to_storage.sol` — conversion from uint32[3] to uint32[] not possible
 - `array/copying/array_copy_storage_storage_static_dynamic.sol` — conversion from uint256[9] to uint256[] not possible
 - `array/inline_array_return.sol` — conversion from uint32[5] to uint32[] not possible
 
+</details>
+
 ## type 'X' is not supported as a Soroban event parameter — 4 file(s)
+
+<details><summary>4 file(s)</summary>
 
 - `events/event_signature_in_library.sol` — type 'struct L.S' is not supported as a Soroban event parameter
 - `events/event_struct_memory_v2.sol` — type 'struct C.S' is not supported as a Soroban event parameter
 - `events/event_struct_storage_v2.sol` — type 'struct C.S' is not supported as a Soroban event parameter
 - `structs/event.sol` — type 'struct Item' is not supported as a Soroban event parameter
 
+</details>
+
 ## b is already declared — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `tryCatch/lowLevel.sol`
 - `tryCatch/panic.sol`
 - `tryCatch/structured.sol`
 
+</details>
+
 ## conversion from bytesN[] to bytesN[] not possible — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `array/copying/array_copy_different_packing.sol` — conversion from bytes8[] to bytes10[] not possible
 - `array/copying/calldata_to_storage_different_base.sol` — conversion from bytes8[] to bytes10[] not possible
 - `array/copying/memory_to_storage_different_base.sol` — conversion from bytes4[] to bytes10[] not possible
 
+</details>
+
 ## data location 'X' can only be specified for array, struct or mapping — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `userDefinedValueType/calldata.sol` — data location 'calldata' can only be specified for array, struct or mapping
 - `userDefinedValueType/calldata_to_storage.sol` — data location 'calldata' can only be specified for array, struct or mapping
 - `userDefinedValueType/memory_to_storage.sol` — data location 'memory' can only be specified for array, struct or mapping
 
+</details>
+
 ## ethereum address literal 'X' not supported on target Soroban — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `cleanup/cleanup_address_types_v1.sol` — ethereum address literal '0x1234567890123456789012345678901234567890' not supported on target Soroban
 - `cleanup/cleanup_address_types_v2.sol` — ethereum address literal '0x1234567890123456789012345678901234567890' not supported on target Soroban
 - `operators/userDefined/consecutive_operator_invocations.sol` — ethereum address literal '0x3333333333333333333333333333333333333333' not supported on target Soroban
 
+</details>
+
 ## expression is not assignable — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `array/array_push_return_reference.sol`
 - `array/push/push_no_args_1d.sol`
 - `array/push/push_no_args_2d.sol`
 
+</details>
+
 ## expression of type function() external not allowed — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `functionTypes/comparison_operators_for_external_functions.sol`
 - `functionTypes/selector_ternary.sol`
 - `functionTypes/selector_ternary_function_pointer_from_function_call.sol`
 
+</details>
+
 ## expression of type function() internal pure returns (uintN) not allowed — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `functionTypes/ternary_contract_internal_function.sol` — expression of type function() internal pure returns (uint256) not allowed
 - `functionTypes/ternary_contract_library_internal_function.sol` — expression of type function() internal pure returns (uint256) not allowed
 - `functionTypes/ternary_contract_public_function.sol` — expression of type function() internal pure returns (uint256) not allowed
 
+</details>
+
 ## lists only permitted in destructure statements — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `expressions/tuple_from_ternary_expression.sol`
 - `types/nested_tuples.sol`
 - `types/tuple_assign_multi_slot_grow.sol`
 
+</details>
+
 ## mapping in a struct variable cannot be public — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `getters/struct_with_bytes.sol`
 - `getters/struct_with_bytes_simple.sol`
 - `storage/struct_accessor.sol`
 
+</details>
+
 ## need instance of contract 'X' to get variable value 'X' — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `inheritance/base_access_to_function_type_variables.sol` — need instance of contract 'C' to get variable value 'x'
 - `various/state_variable_local_variable_mixture.sol` — need instance of contract 'A' to get variable value 'y'
 - `various/state_variable_under_contract_name.sol` — need instance of contract 'Scope' to get variable value 'stateVar'
 
+</details>
+
 ## parameter of type 'X' not allowed public or external functions — 3 file(s)
+
+<details><summary>3 file(s)</summary>
 
 - `types/array_mapping_abstract_constructor_param.sol` — parameter of type 'storage' not allowed public or external functions
 - `types/mapping_abstract_constructor_param.sol` — parameter of type 'storage' not allowed public or external functions
 - `types/struct_mapping_abstract_constructor_param.sol` — parameter of type 'storage' not allowed public or external functions
 
+</details>
+
 ## 'X' is a contract — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `libraries/library_stray_values.sol` — 'Lib' is a contract
 - `revertStrings/library_non_view_call.sol` — 'L' is a contract
 
+</details>
+
 ## 'X' is an user type — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `userDefinedValueType/in_parenthesis.sol` — 'MyInt' is an user type
 - `userDefinedValueType/wrap_unwrap.sol` — 'MyAddress' is an user type
 
+</details>
+
 ## 'X' is not supported on Soroban — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `various/address_code.sol` — 'address.code' is not supported on Soroban
 - `various/code_length_contract_member.sol` — 'address.code' is not supported on Soroban
 
+</details>
+
 ## conversion from function() internal returns (uintN)[] to function() internal returns (uintN)[] not possible — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `array/array_function_pointers.sol` — conversion from function() internal returns (uint256)[] to function() internal returns (uint256)[] not possible
 - `array/copying/copy_function_internal_storage_array.sol` — conversion from function() internal returns (uint256)[] to function() internal returns (uint256)[] not possible
 
+</details>
+
 ## conversion from uintN[N][] to uintN[N][] not possible — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `array/copying/array_copy_nested_array.sol` — conversion from uint256[2][] to uint256[4][] not possible
 - `array/copying/array_nested_memory_to_storage.sol` — conversion from uint256[2][] to uint256[4][] not possible
 
+</details>
+
 ## fallback function must not be declare payable, use 'X' instead — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `expressions/uncalled_address_transfer_send.sol` — fallback function must not be declare payable, use 'receive() external payable' instead
 - `fallback/fallback_or_receive.sol` — fallback function must not be declare payable, use 'receive() external payable' instead
 
+</details>
+
 ## function 'X' of abstract contract 'X' is overloaded — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `interfaceID/lisa.sol` — function 'supportsInterface' of abstract contract 'ERC165MappingImplementation' is overloaded
 - `interfaceID/lisa_interfaceId.sol` — function 'supportsInterface' of abstract contract 'ERC165MappingImplementation' is overloaded
 
+</details>
+
 ## function 'X' override list does not contain 'X' — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `inheritance/super_in_constructor.sol` — function 'f' override list does not contain 'A'
 - `various/super.sol` — function 'f' override list does not contain 'A'
 
+</details>
+
 ## function arguments do not match in conversion from 'X' to 'X' — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `functionCall/call_internal_function_with_multislot_arguments_via_pointer.sol` — function arguments do not match in conversion from 'function(function() external returns (uint256),function() external returns (uint256)) internal returns (function() external returns (uint256))' to 'function(function() external returns (uint256),function() external returns (uint256)) internal returns (function() external returns (uint256))'
 - `functionTypes/store_function.sol` — function arguments do not match in conversion from 'function(function(uint256) external returns (uint256)) internal returns (uint256)' to 'function(function(uint256) external returns (uint256)) internal returns (uint256)'
 
+</details>
+
 ## missing arguments to base contract 'X' constructor — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `constructor/function_usage_in_constructor_arguments.sol` — missing arguments to base contract 'BaseBase' constructor
 - `virtualFunctions/virtual_function_usage_in_constructor_arguments.sol` — missing arguments to base contract 'BaseBase' constructor
 
+</details>
+
 ## new cannot construct array of 'X' — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `abiencodedecode/contract_array.sol` — new cannot construct array of 'contract C'
 - `abiencodedecode/contract_array_v2.sol` — new cannot construct array of 'contract C'
 
+</details>
+
 ## x is already declared — 2 file(s)
+
+<details><summary>2 file(s)</summary>
 
 - `c99_scoping_activation.sol`
 - `cleanup/exp_cleanup_nonzero_base.sol`
 
+</details>
+
 ## accessor function cannot be called via an internal function call — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionTypes/function_external_delete_storage.sol`
 
+</details>
+
 ## cannot call private library function — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `using/private_library_function.sol`
 
+</details>
+
 ## conversion from bool[] to bool not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `various/skip_dynamic_types_for_static_arrays_with_dynamic_elements.sol`
 
+</details>
+
 ## conversion from bytesN to string not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/indexAccess/inline_array_index_access_strings.sol` — conversion from bytes3 to string not possible
 
+</details>
+
 ## conversion from function() external returns (function() external returns (uintN))[] to function() external returns (function() external returns (uintN))[] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/function_array_cross_calls.sol` — conversion from function() external returns (function() external returns (uint256))[] to function() external returns (function() external returns (uint256))[] not possible
 
+</details>
+
 ## conversion from function() external returns (uintN)[] to function() external returns (uintN)[] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `abiEncoderV2/calldata_array_function_types.sol` — conversion from function() external returns (uint256)[] to function() external returns (uint256)[] not possible
 
+</details>
+
 ## conversion from function() external to function() external not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `abiencodedecode/abi_encode_call_memory.sol`
 
+</details>
+
 ## conversion from function() internal returns (uintN)[N] to function() internal returns (uintN)[N] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/copying/copy_internal_function_array_to_storage.sol` — conversion from function() internal returns (uint256)[20] to function() internal returns (uint256)[20] not possible
 
+</details>
+
 ## conversion from function(uintN) internal returns (uintN)[] to function(uintN) internal returns (uintN)[] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/function_memory_array.sol` — conversion from function(uint256) internal returns (uint256)[] to function(uint256) internal returns (uint256)[] not possible
 
+</details>
+
 ## conversion from uintN[N] to uintN[N] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/copying/array_copy_storage_storage_static_static.sol` — conversion from uint256[20] to uint256[40] not possible
 
+</details>
+
 ## conversion from uintN[N][N] to uintN[N][N] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/copying/array_copy_storage_storage_different_base_nested.sol` — conversion from uint64[5][2] to uint128[6][3] not possible
 
+</details>
+
 ## conversion from uintN[N][] to uintN not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `abiEncoderV2/calldata_array_static_dynamic_static.sol` — conversion from uint32[1][] to uint32 not possible
 
+</details>
+
 ## conversion from uintN[N][] to uintN[][] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/copying/nested_array_element_storage_to_storage.sol` — conversion from uint32[2][] to uint32[][] not possible
 
+</details>
+
 ## conversion from uintN[] to uintN[] not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/copying/array_copy_storage_storage_different_base.sol` — conversion from uint64[] to uint256[] not possible
 
+</details>
+
 ## conversion to bytesN from address not allowed — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `operators/userDefined/all_possible_user_defined_value_types_with_operators.sol` — conversion to bytes20 from address not allowed
 
+</details>
+
 ## destructuring assignment has N elements on the left and N on the right — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `various/skip_dynamic_types_for_structs.sol` — destructuring assignment has 3 elements on the left and 4 on the right
 
+</details>
+
 ## expected 'X', found integer — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/copying/cleanup_during_multi_element_per_slot_copy.sol` — expected 'uint32[] storage', found integer
 
+</details>
+
 ## expected expression before 'X' token — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `structs/lone_struct_array_type.sol` — expected expression before ']' token
 
+</details>
+
 ## expression found where type expected — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionCall/creation_function_call_no_args.sol`
 
+</details>
+
 ## expression not expected here — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionCall/call_attached_library_function_on_storage_variable.sol`
 
+</details>
+
 ## expression of type function() internal returns (uintN) not allowed — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `expressions/conditional_expression_functions.sol` — expression of type function() internal returns (uint256) not allowed
 
+</details>
+
 ## expression of type function(intN,intN) internal pure returns (intN) not allowed — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionCall/conditional_with_arguments.sol` — expression of type function(int256,int256) internal pure returns (int256) not allowed
 
+</details>
+
 ## expression of type function(uintN) internal returns (uintN) not allowed — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionTypes/same_function_in_construction_and_runtime_equality_check.sol` — expression of type function(uint256) internal returns (uint256) not allowed
 
+</details>
+
 ## expression of type rational not allowed — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `constantEvaluator/negative_fractional_mod.sol`
 
+</details>
+
 ## function 'X' should specify 'X' — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionCall/inheritance/super_skip_unimplemented_in_abstract_contract.sol` — function 'f' should specify 'override'
 
+</details>
+
 ## function declared 'X' but this expression reads from state — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `libraries/internal_library_function_attached_to_string_accepting_storage.sol` — function declared 'pure' but this expression reads from state
 
+</details>
+
 ## implicit conversion to uintN from bytesN not allowed — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `array/indexAccess/bytes_index_access.sol` — implicit conversion to uint256 from bytes1 not allowed
 
+</details>
+
 ## left shift by N is not possible — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `operators/shifts/shift_left_larger_type.sol` — left shift by 254 is not possible
 
+</details>
+
 ## missing arguments to contract 'X' constructor — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `inheritance/pass_dynamic_arguments_to_the_base_base.sol` — missing arguments to contract 'Base' constructor
 
+</details>
+
 ## multiple definitions of event — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `events/event_shadowing_file_level.sol`
 
+</details>
+
 ## return type 'X' not allowed in public or external functions — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionCall/call_function_returning_function.sol` — return type 'function internal' not allowed in public or external functions
 
+</details>
+
 ## try only supports external calls or constructor calls — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `tryCatch/try_catch_library_call.sol`
 
+</details>
+
 ## type 'X' does not match return value of function 'X' — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `tryCatch/return_function.sol` — type 'function() external' does not match return value of function 'function() external'
 
+</details>
+
 ## type not expected — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `various/crazy_elementary_typenames_on_stack.sol`
 
+</details>
+
 ## unexpect block encountered — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `functionTypes/stack_height_check_on_adding_gas_variable_to_function.sol`
 
+</details>
+
 ## unknown modifier 'X' on function — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `modifiers/access_through_contract_name.sol` — unknown modifier 'A.m' on function
 
+</details>
+
 ## value N does not fit into type intN. — 1 file(s)
+
+<details><summary>1 file(s)</summary>
 
 - `arithmetics/signed_mod.sol` — value 57896044618658097711785492504343953926634992332820282019728792003956564819968 does not fit into type int256.
 
+</details>
+
 ## variable cannot be declared external — 1 file(s)
 
+<details><summary>1 file(s)</summary>
+
 - `abiencodedecode/abi_encode_call_is_consistent.sol`
+
+</details>
 

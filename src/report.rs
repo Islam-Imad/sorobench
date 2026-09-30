@@ -425,7 +425,12 @@ fn section(s: &mut String, title: &str, reports: &[FileReport], bucket: Bucket, 
             .unwrap_or_else(|| r.detail.clone());
         let detail = detail.replace('\n', " ");
         let detail = if detail.len() > 160 {
-            format!("{}…", &detail[..160])
+            // Truncate on a char boundary — crash details carry arbitrary text.
+            let end = (0..=160)
+                .rev()
+                .find(|&i| detail.is_char_boundary(i))
+                .unwrap();
+            format!("{}…", &detail[..end])
         } else {
             detail
         };

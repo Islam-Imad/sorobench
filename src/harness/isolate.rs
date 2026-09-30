@@ -53,7 +53,7 @@ where
     let mut child = Command::new(program)
         .args(args)
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .spawn()?;
 
     let start = Instant::now();
@@ -62,8 +62,8 @@ where
             Some(status) => {
                 return Ok(Isolated {
                     exit: classify(&status),
-                    stdout: drain_stdout(&mut child),
-                    stderr: String::new(),
+                    stdout: drain(child.stdout.take()),
+                    stderr: drain(child.stderr.take()),
                 });
             }
             None if start.elapsed() >= timeout => {
@@ -71,8 +71,8 @@ where
                 let _ = child.wait();
                 return Ok(Isolated {
                     exit: Exit::Timeout,
-                    stdout: drain_stdout(&mut child),
-                    stderr: String::new(),
+                    stdout: drain(child.stdout.take()),
+                    stderr: drain(child.stderr.take()),
                 });
             }
             None => std::thread::sleep(Duration::from_millis(20)),
@@ -80,12 +80,47 @@ where
     }
 }
 
-fn drain_stdout(child: &mut std::process::Child) -> String {
+/// Read a child pipe to end-of-stream, swallowing I/O errors (best-effort).
+fn drain<R: Read>(stream: Option<R>) -> String {
     let mut buf = String::new();
-    if let Some(mut out) = child.stdout.take() {
-        let _ = out.read_to_string(&mut buf);
+    if let Some(mut s) = stream {
+        let _ = s.read_to_string(&mut buf);
     }
     buf
+}
+
+pub fn panic_message(stderr: &str) -> Option<String> {
+    let mut lines = stderr.lines();
+    while let Some(line) = lines.next() {
+        if line.contains("panicked at") {
+            let mut body: Vec<&str> = Vec::new();
+            for l in lines.by_ref() {
+                let t = l.trim_start();
+                if t.starts_with("note:") || t == "stack backtrace:" {
+                    break;
+                }
+                body.push(l.trim_end());
+            }
+            // Drop blank lines at the edges, then join the message verbatim.
+            while body.first().is_some_and(|l| l.trim().is_empty()) {
+                body.remove(0);
+            }
+            while body.last().is_some_and(|l| l.trim().is_empty()) {
+                body.pop();
+            }
+            let joined = body.join("\n");
+            let joined = joined.trim();
+            if !joined.is_empty() {
+                return Some(joined.to_string());
+            }
+            return Some(line.trim().to_string());
+        }
+    }
+    stderr
+        .lines()
+        .map(str::trim)
+        .find(|l| !l.is_empty() && !l.starts_with("note:"))
+        .map(String::from)
 }
 
 #[cfg(unix)]
