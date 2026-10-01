@@ -19,7 +19,7 @@ filter = ["dep:solang-parser"]
 # pulls nothing new. The default (LLVM-free) build stays dependency-free.
 # `gaps` is the read-only half: it only deserializes `results.jsonl`, so it needs
 # serde but NOT the LLVM16 harness — `sorobench gaps` builds and runs standalone.
-gaps = ["dep:serde", "dep:serde_json"]
+gaps = ["dep:serde", "dep:serde_json", "dep:toml"]
 harness = ["filter", "decoder", "gaps", "dep:solang"]
 
 [dependencies]
@@ -36,3 +36,4 @@ soroban-sdk = { version = "23.0.0-rc.2.2", features = ["testutils"], optional = 
 
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
+toml = { version = "0.8", optional = true }

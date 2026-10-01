@@ -56,37 +56,82 @@ where
         .stderr(Stdio::piped())
         .spawn()?;
 
+    // Drain both pipes on their own threads so a chatty child can never block
+    // on a full pipe (which would look like a timeout).
+    let out = spawn_reader(child.stdout.take());
+    let err = spawn_reader(child.stderr.take());
+
     let start = Instant::now();
-    loop {
+    let exit = loop {
         match child.try_wait()? {
-            Some(status) => {
-                return Ok(Isolated {
-                    exit: classify(&status),
-                    stdout: drain(child.stdout.take()),
-                    stderr: drain(child.stderr.take()),
-                });
-            }
+            Some(status) => break classify(&status),
             None if start.elapsed() >= timeout => {
                 let _ = child.kill();
                 let _ = child.wait();
-                return Ok(Isolated {
-                    exit: Exit::Timeout,
-                    stdout: drain(child.stdout.take()),
-                    stderr: drain(child.stderr.take()),
-                });
+                break Exit::Timeout;
             }
             None => std::thread::sleep(Duration::from_millis(20)),
         }
-    }
+    };
+    Ok(Isolated {
+        exit,
+        stdout: out.join().unwrap_or_default(),
+        stderr: err.join().unwrap_or_default(),
+    })
 }
 
-/// Read a child pipe to end-of-stream, swallowing I/O errors (best-effort).
-fn drain<R: Read>(stream: Option<R>) -> String {
-    let mut buf = String::new();
-    if let Some(mut s) = stream {
-        let _ = s.read_to_string(&mut buf);
+fn spawn_reader<R: Read + Send + 'static>(pipe: Option<R>) -> std::thread::JoinHandle<String> {
+    std::thread::spawn(move || {
+        let mut bytes = Vec::new();
+        if let Some(mut p) = pipe {
+            let _ = p.read_to_end(&mut bytes);
+        }
+        String::from_utf8_lossy(&bytes).into_owned()
+    })
+}
+
+/// The informative part of a crashed child's stderr, on one line: the Rust
+/// panic (location + full message, see [`panic_message`]), an LLVM assertion,
+/// or a stack overflow; otherwise the last few lines.
+pub fn crash_summary(stderr: &str) -> String {
+    let lines: Vec<&str> = stderr
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .collect();
+    let mut picked: Vec<String> = Vec::new();
+    for l in lines.iter() {
+        if l.contains("panicked at") {
+            // The `panicked at <location>` line, then the full message body.
+            picked.push(l.to_string());
+            if let Some(body) = panic_message(stderr) {
+                picked.extend(body.lines().map(|b| b.trim().to_string()));
+            }
+            break;
+        }
+        if l.contains("Assertion")
+            || l.contains("overflowed its stack")
+            || l.starts_with("LLVM ERROR")
+        {
+            picked.push(l.to_string());
+            break;
+        }
     }
-    buf
+    if picked.is_empty() {
+        let n = lines.len();
+        picked = lines[n.saturating_sub(3)..]
+            .iter()
+            .map(|l| l.to_string())
+            .collect();
+    }
+    let joined = picked.join(" | ");
+    let joined: String = if joined.chars().count() > 2000 {
+        let cut: String = joined.chars().take(2000).collect();
+        format!("{cut}…")
+    } else {
+        joined
+    };
+    joined
 }
 
 pub fn panic_message(stderr: &str) -> Option<String> {

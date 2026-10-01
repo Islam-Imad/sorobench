@@ -1,0 +1,433 @@
+# sorobench explanation dictionary for Solang's Soroban target.
+#
+# Each [[rule]] explains one failure pattern. For every failure, the FIRST
+# matching rule wins, so specific rules go before general ones. A failure that
+# matches no rule is reported as "review" (needs a human), never as a bug.
+#
+# Before adding a rule, check Solang's own docs for the Soroban target
+# (docs/targets/soroban_*.rst in the Solang repo). A behaviour the docs describe
+# is "documented-*", not a bug.
+#
+# Conditions (all given conditions must hold):
+#   kind         failure kinds: gap, crash, timeout, filtered, unsupported,
+#                mismatch, trap, no-revert
+#   match        every substring must appear in the failure text
+#   any          at least one substring must appear in the failure text
+#   path         at least one substring must appear in the test path
+#   sig          at least one substring must appear in the call signature
+#   warning      substring that must appear in one of the test's warnings
+#   narrow_int   true: the call signature has an integer type Soroban rounds up
+#                (anything but 32/64/128/256 bits)
+#   handle_bytes true: the returned bytes are raw Soroban object handles
+#   other_target "compiles" or "fails": result of compiling the same test for
+#                Solang's Polkadot target (gaps only)
+#
+# Categories:
+#   evm-only               the test relies on an EVM concept Soroban does not have
+#   documented-unsupported Solang's docs list the feature as not supported
+#   documented-difference  Solang's docs describe this behaviour as intended
+#   soroban-gap            missing on Soroban, not documented, works on other targets
+#   solang-gap             Solang rejects it on every target, not Soroban-specific
+#   bug                    violates Solang's documented behaviour (crash, wrong result)
+#   tool                   a sorobench or test-environment limitation
+#
+# Docs references are relative to the Solang repo. Categories were checked
+# against the Soroban docs of Solang v0.4.0 (docs/targets/soroban_*.rst).
+
+# ─────────────────────────── compile-time gaps ───────────────────────────
+
+[[rule]]
+id = "multi-return"
+kind = ["gap"]
+match = ["Soroban external functions can return at most one value"]
+category = "documented-unsupported"
+title = "Multiple return values from public functions"
+meaning = "Solidity functions can return several values at once (`returns (uint, bool)`). On Soroban a contract function returns a single value, and Solang's docs state that external functions return at most one value. The same code compiles for Solang's other targets. This is the single largest reason tests are rejected."
+suggestion = "Return the values packed into one Soroban value (a `Vec` or struct-like `Map`) and unpack them on the calling side."
+docs = "docs/targets/soroban_support_matrix.rst, 'Contract model': external functions return at most one value (documented since v0.4.0)."
+
+[[rule]]
+id = "new-contract"
+kind = ["gap"]
+match = ["contract construction is not supported for target soroban"]
+category = "documented-unsupported"
+title = "Creating contracts with `new Contract()`"
+meaning = "The test deploys another contract with `new C()`. Solang does not support this syntax on Soroban; contracts must be deployed from an uploaded Wasm hash instead."
+suggestion = "Use the `deployContract(wasm_hash, salt, ...args)` builtin. Supporting `new C()` would require embedding and uploading the child contract's Wasm."
+docs = "docs/targets/soroban_support_matrix.rst, 'Deploying and upgrading contracts': `new Contract()` not yet supported."
+
+[[rule]]
+id = "value-transfer-uint512"
+kind = ["gap"]
+match = ["implicit conversion would truncate from uint512 to uint256"]
+category = "documented-unsupported"
+title = "Native value transfer (`{value: …}`, `.balance`, `.transfer`)"
+meaning = "These tests send or read native currency (`{value: x}`, `{gas: x}`, `address.balance`, `.transfer`). Soroban has no native value attached to calls, and Solang documents payable-style flows as unsupported. The error message about `uint512` is an unhelpful symptom of that."
+suggestion = "Reject value/gas call options and `balance`/`transfer` on Soroban with a direct message (\"native value transfer is not supported on Soroban\") instead of the uint512 truncation error."
+docs = "docs/targets/soroban_support_matrix.rst, 'Native value transfer and payable-style flows': Unsupported."
+
+[[rule]]
+id = "int-width-bytes-conversion"
+kind = ["gap"]
+any = ["conversion to bytes", "cannot be converted to type 'bytes", "from bytes"]
+warning = "rounded up"
+category = "documented-difference"
+title = "Conversions between small integers and `bytesN`"
+meaning = "On Soroban, Solang rounds integer types up to 32/64/128/256 bits (`uint8` becomes `uint32`). A conversion such as `bytes1(uint8 x)` is only legal between types of the same size, so after rounding it becomes `bytes1(uint32 x)` and is rejected. The compiler's rounding warning on this test is the cause."
+suggestion = "Keep the declared width for conversions (convert before rounding), or explain in the rounding warning that `bytesN` conversions will change."
+docs = "docs/targets/soroban_language_compatibility.rst, 'Integer Widths'."
+
+[[rule]]
+id = "struct-in-event"
+kind = ["gap"]
+match = ["is not supported as a Soroban event parameter"]
+category = "documented-unsupported"
+title = "Structs as event parameters"
+meaning = "The test emits an event that has a struct field. Solang documents structs in `event` declarations as not yet supported on Soroban."
+suggestion = "Encode the struct as a Soroban `Map` in the event data."
+docs = "docs/targets/soroban_support_matrix.rst, 'Structs'."
+
+[[rule]]
+id = "struct-public-getter"
+kind = ["gap"]
+match = ["is not supported as a Soroban public variable accessor return value"]
+category = "documented-unsupported"
+title = "Public getters for struct state variables"
+meaning = "A `public` state variable of struct type needs an automatically generated getter that returns the struct. Solang's docs state that structs are not yet supported as public state-variable accessor return values on Soroban (user-written functions returning structs do work)."
+suggestion = "Generate the getter the same way as a user-written function returning the struct."
+docs = "docs/targets/soroban_support_matrix.rst, 'Structs': not yet supported as `public` accessor return values (documented since v0.4.0)."
+
+[[rule]]
+id = "eth-address-literal"
+kind = ["gap"]
+match = ["ethereum address literal"]
+category = "evm-only"
+title = "Ethereum address literals"
+meaning = "The test contains a 20-byte Ethereum address literal (`0x1234…`). Soroban addresses are a different, 32-byte strkey format, so an Ethereum address has no meaning there."
+suggestion = "None needed; Soroban addresses come from the host (e.g. `msg.sender` equivalents or arguments)."
+docs = "docs/targets/soroban_rust_sdk_differences.rst (host-value representation)."
+
+[[rule]]
+id = "address-code"
+kind = ["gap"]
+match = ["'address.code' is not supported on Soroban"]
+category = "evm-only"
+title = "Reading contract bytecode (`address.code`)"
+meaning = "The test reads another contract's EVM bytecode. Soroban contracts are Wasm blobs referenced by hash; there is no equivalent of reading code by address."
+suggestion = "None needed."
+docs = "Not applicable on Soroban."
+
+[[rule]]
+id = "external-source-files"
+kind = ["gap"]
+match = ["file not found"]
+category = "tool"
+title = "Tests that import files from outside the test"
+meaning = "The test imports a file that is not part of the test itself (solc's `==== ExternalSource: ====` helper libraries stored next to the suite). sorobench does not load external sources yet, so Solang cannot find the import. This says nothing about Solang."
+suggestion = "sorobench: load `ExternalSource` files relative to the test directory."
+docs = "sorobench limitation."
+
+[[rule]]
+id = "soroban-only-rejection"
+kind = ["gap"]
+other_target = "compiles"
+category = "soroban-gap"
+title = "Rejected on Soroban only (not yet explained)"
+meaning = "Solang rejects this test for Soroban, but accepts the same code for its Polkadot target, so the limitation is specific to the Soroban backend. No dictionary rule explains it yet."
+suggestion = "Check the error against the Soroban docs and add a specific rule."
+docs = "Check docs/targets/soroban_support_matrix.rst."
+
+[[rule]]
+id = "solang-language-gap"
+kind = ["gap"]
+other_target = "fails"
+category = "solang-gap"
+title = "Rejected by Solang on every target"
+meaning = "Solang rejects this code for Polkadot as well, so this is a general Solang language limitation (for example calldata slices, signed `**`, some function-type and array conversions, `super`, library `using for` calls), not something specific to Soroban."
+suggestion = "Report to Solang as a language feature, independent of the Soroban backend."
+docs = "Not a Soroban topic."
+
+# ─────────────────────────────── crashes ────────────────────────────────
+
+[[rule]]
+id = "panic-unsupported-abi-type"
+kind = ["crash"]
+any = ["not supported by the Soroban encoder", "not supported by the Soroban decoder"]
+category = "bug"
+title = "Unsupported type crashes the Soroban encoder/decoder"
+meaning = "The test passes a type across the contract boundary that Solang cannot encode for Soroban (function types, user-defined value types, contract types, …). Solang knows it is unsupported, but raises a panic instead of a compile error. Solang's docs state that unsupported constructs should be rejected with a diagnostic, not crash."
+suggestion = "Turn the panic in `codegen/targets/soroban/encoding.rs` into a sema diagnostic naming the type and location."
+docs = "docs/targets/soroban_language_compatibility.rst, intro (reject rather than miscompile); support matrix, 'Enums and other complex user-defined types'."
+
+[[rule]]
+id = "panic-unsupported-builtin"
+kind = ["crash"]
+match = ["is not supported for target soroban"]
+category = "bug"
+title = "Unsupported builtin crashes Soroban codegen"
+meaning = "The test uses a builtin (or storage operation) that Solang does not implement for Soroban. Instead of a compile error, the compiler panics in `emit/soroban/target.rs`."
+suggestion = "Reject the builtin during semantic analysis for the Soroban target."
+docs = "docs/targets/soroban_language_compatibility.rst, intro (reject rather than miscompile)."
+
+[[rule]]
+id = "modifier-dispatch"
+kind = ["crash"]
+match = ["soroban/dispatch.rs"]
+category = "bug"
+title = "Function modifiers crash Soroban dispatch"
+meaning = "Almost every test here declares a function modifier. Compiling it for Soroban hits `unreachable!()` in the Soroban dispatch code. Modifiers are not documented as unsupported, so this is a compiler bug."
+suggestion = "Handle modifier-wrapped functions in `codegen/targets/soroban/dispatch.rs`."
+docs = "Modifiers are not mentioned in the Soroban docs."
+
+[[rule]]
+id = "try-catch-polkadot-path"
+kind = ["crash"]
+match = ["targets/polkadot/try_catch.rs"]
+category = "bug"
+title = "`try`/`catch` runs Polkadot-only code"
+meaning = "Compiling `try`/`catch` for Soroban ends up in the Polkadot target's code generator, which panics with `not implemented`. The Soroban backend should either implement try/catch or reject it."
+suggestion = "Route try/catch to a Soroban implementation (host `try_call`) or emit a diagnostic."
+docs = "try/catch is not mentioned in the Soroban docs."
+
+[[rule]]
+id = "llvm-value-kind"
+kind = ["crash"]
+match = ["but expected PointerValue"]
+category = "bug"
+title = "LLVM value-kind confusion (integer where a pointer is expected)"
+meaning = "Solang's code generator hands LLVM an integer constant where a pointer is required (e.g. in `Binary::vector_bytes`, triggered by `bytes32 x = \"\"` and dynamic return types). This is an internal compiler error."
+suggestion = "Check the value kinds in emit for byte-array/string conversions on Soroban."
+docs = "Internal error."
+
+[[rule]]
+id = "llvm-assert-call"
+kind = ["crash"]
+match = ["CallInst::init"]
+category = "bug"
+title = "LLVM assertion: call with the wrong argument types"
+meaning = "Solang emits an LLVM call whose arguments do not match the called function's signature; LLVM aborts (SIGABRT). This is an internal compiler error."
+suggestion = "Minimise one of these tests and compare the emitted call with the callee's declaration."
+docs = "Internal error."
+
+[[rule]]
+id = "llvm-assert-other"
+kind = ["crash"]
+any = ["doRAUW", "InlineFunction", "Assertion"]
+category = "bug"
+title = "Other LLVM assertion failures"
+meaning = "LLVM aborts on invalid IR produced by Solang (type mismatch in replace-all-uses, inliner assertion, …). Internal compiler error."
+suggestion = "Minimise and file individually."
+docs = "Internal error."
+
+[[rule]]
+id = "stack-overflow"
+kind = ["crash"]
+match = ["overflowed its stack"]
+category = "bug"
+title = "Stack overflow on recursive struct types"
+meaning = "The compiler recurses without end, typically on a struct that refers to itself through an array or mapping."
+suggestion = "Guard the recursive type walk in the Soroban encoding/layout code."
+docs = "Internal error."
+
+[[rule]]
+id = "constant-folding"
+kind = ["crash"]
+match = ["constant_folding.rs"]
+category = "bug"
+title = "Crash in constant folding"
+meaning = "The optimiser's constant folding pass meets an expression it does not expect (`unreachable!` or `Poison`). Internal compiler error, not Soroban-specific code."
+suggestion = "Minimise and file; check which codegen path produces the unexpected expression."
+docs = "Internal error."
+
+[[rule]]
+id = "symbol-too-long"
+kind = ["crash"]
+match = ["exceeds limit"]
+category = "bug"
+title = "Overloaded function names exceed Soroban's symbol length"
+meaning = "Solang gives overloaded functions a mangled export name (e.g. `f_uint64ArrayArray_uint64_uint64`). Soroban limits function names to 32 characters, and Solang panics when the mangled name is longer."
+suggestion = "Use a shorter, hashed mangling for long names, or report a clean error."
+docs = "Internal error."
+
+[[rule]]
+id = "crash-other"
+kind = ["crash"]
+category = "bug"
+title = "Other compiler crashes"
+meaning = "Solang crashed (panic, out-of-bounds index, `unwrap` on `None`, …) instead of compiling or rejecting the test. A compiler must never crash on any input."
+suggestion = "Minimise each and file individually."
+docs = "Internal error."
+
+[[rule]]
+id = "timeout"
+kind = ["timeout"]
+category = "review"
+title = "Timed out (over 10 s)"
+meaning = "Compiling or running the test took longer than 10 seconds. It may be a compiler hang or simply a slow test."
+suggestion = "Re-run alone with a longer timeout to tell a hang from slowness."
+docs = ""
+
+# ──────────────────────────── excluded tests ────────────────────────────
+
+[[rule]]
+id = "evm-only-also-crashed"
+kind = ["filtered"]
+match = ["also crashed"]
+category = "evm-only"
+title = "EVM-only test that also crashes the compiler"
+meaning = "The test uses an EVM-only feature (usually inline assembly), so it is excluded from the pass rate. Solang crashed on it instead of rejecting it cleanly, which is a minor diagnostic bug."
+suggestion = "Reject inline assembly for Soroban with a diagnostic (e.g. `sema/yul/builtin.rs` currently panics with `not implemented`)."
+docs = "docs/targets/soroban_support_matrix.rst, 'Yul and inline assembly': Unsupported."
+
+[[rule]]
+id = "evm-only"
+kind = ["filtered"]
+category = "evm-only"
+title = "EVM-only feature"
+meaning = "The test uses a feature that exists only on the EVM (assembly, `selfdestruct`, `ecrecover`, `tx.origin`, `msg.value`, low-level calls, EVM block fields). It is excluded from the pass rate."
+suggestion = "None needed."
+docs = "docs/targets/soroban_support_matrix.rst."
+
+[[rule]]
+id = "tool-unsupported"
+kind = ["unsupported"]
+category = "tool"
+title = "Not runnable by sorobench"
+meaning = "sorobench cannot run this test yet (e.g. constructor arguments of an unsupported type)."
+suggestion = "sorobench: extend argument mapping."
+docs = "sorobench limitation."
+
+# ─────────────────────────── runtime failures ───────────────────────────
+
+[[rule]]
+id = "abi-encode-handles"
+kind = ["mismatch"]
+handle_bytes = true
+category = "documented-difference"
+title = "`abi.encode` returns Soroban handles, not ABI bytes"
+meaning = "On Soroban, Solang's `abi.encode` produces 8 bytes per value: the value's live host-object handle, not the EVM ABI encoding. Solang documents that these bytes are only valid inside the same invocation. A test that returns or compares the encoded bytes therefore cannot match the EVM result."
+suggestion = "If `abi.encode` output must leave the contract, encode real bytes (e.g. with the host's `serialize_to_bytes`) or reject returning it."
+docs = "docs/targets/soroban_examples_coverage.rst, 'eth_abi' (handles valid only within one invocation)."
+
+[[rule]]
+id = "abi-decode-external-bytes"
+kind = ["trap"]
+match = ["Error(Value, InvalidInput)"]
+sig = ["(bytes)", "(bytes,"]
+path = ["abiEncoder", "abiDecoder"]
+category = "documented-difference"
+title = "`abi.decode` of bytes from outside the contract"
+meaning = "The test passes EVM ABI-encoded bytes into the contract and decodes them with `abi.decode`. On Soroban, `abi.decode` expects host-object handles produced in the same invocation, so the host rejects the input (`Error(Value, InvalidInput)`)."
+suggestion = "Same as `abi.encode`: document clearly, or support real byte encodings."
+docs = "docs/targets/soroban_examples_coverage.rst, 'eth_abi'."
+
+[[rule]]
+id = "hash-of-encode-packed"
+kind = ["mismatch"]
+path = ["builtinFunctions/keccak256", "builtinFunctions/sha256", "builtinFunctions/iterated_keccak256", "cleanup/cleanup_bytes_types_shortening"]
+category = "review"
+title = "Hashes differ (input built with `abi.encodePacked`)"
+meaning = "Solang's docs list `keccak256` and `sha256` as supported on Soroban, yet the hash differs from the EVM. All these tests hash the output of `abi.encodePacked(...)`. If `encodePacked` behaves like `abi.encode` on Soroban (host handles instead of bytes), the hash input differs and the hash is correct; if not, the hash itself is wrong. Strong bug candidate until one of the two is confirmed."
+suggestion = "Hash a plain literal (e.g. `keccak256(\"foo\")`) on Soroban and compare with the known EVM value, to tell a hashing bug from an encoding difference."
+docs = "docs/targets/soroban_support_matrix.rst, 'Hash and cryptographic builtins': Supported (since v0.4.0)."
+
+[[rule]]
+id = "enum-range-not-checked"
+kind = ["no-revert"]
+path = ["enum"]
+category = "review"
+title = "Out-of-range enum values are accepted"
+meaning = "The test passes a number that is not a valid value of the enum (e.g. 5 for an enum with 3 members) and expects the call to revert, as Solidity does. On Soroban the call succeeds. Solang's docs list enums as supported, so accepting invalid values is a strong bug candidate. It could also be a consequence of enums crossing the Soroban boundary as plain integers."
+suggestion = "Range-check enum arguments when decoding them in the Soroban dispatcher."
+docs = "docs/targets/soroban_support_matrix.rst, 'Enums and other complex user-defined types': enumerations supported (since v0.4.0)."
+
+[[rule]]
+id = "int-width-overflow"
+kind = ["no-revert", "mismatch", "trap"]
+warning = "rounded up"
+narrow_int = true
+category = "documented-difference"
+title = "Small integer types are computed at a wider width"
+meaning = "On Soroban, Solang rounds integer types up to 32/64/128/256 bits and warns about it. Arithmetic, overflow checks, shifts and truncation therefore follow the wider type: `uint8` 200 + 100 returns 300 instead of reverting. This is documented, but the warning does not mention that overflow protection changes."
+suggestion = "Keep the declared width inside the contract (range-check inputs, check overflow at the declared width) or state the overflow consequence in the warning."
+docs = "docs/targets/soroban_language_compatibility.rst, 'Integer Widths'."
+
+[[rule]]
+id = "int-width-probable"
+kind = ["no-revert", "mismatch", "trap"]
+warning = "rounded up"
+category = "review"
+title = "Probably caused by integer rounding (needs confirmation)"
+meaning = "The test declares small integer types that Solang rounds up on Soroban, which is the likely cause. The failing call's own parameters are not small integers, so the link is not certain."
+suggestion = "Confirm by rewriting the test with 32/64/128/256-bit types."
+docs = "docs/targets/soroban_language_compatibility.rst, 'Integer Widths'."
+
+[[rule]]
+id = "shift-by-width"
+kind = ["mismatch"]
+path = ["operators/shifts/shift_left", "operators/shifts/shift_underflow", "operators/shifts/shift_right"]
+category = "bug"
+title = "Shifting by the full bit width gives the wrong result"
+meaning = "In Solidity, `x << 256` on a `uint256` is 0, and large right shifts of negative numbers give -1. On Soroban the result is the unshifted value (`0x4266 << 256` returns `0x4266`), which suggests the shift amount is taken modulo the width, as LLVM does for out-of-range shifts. No integer rounding is involved (`uint256`)."
+suggestion = "Clamp the shift amount before emitting LLVM `shl`/`lshr`/`ashr` (shift amount ≥ width must yield 0, or -1 for negative `>>`)."
+docs = "Solidity semantics; not a documented Soroban difference."
+
+[[rule]]
+id = "evm-selector-concepts"
+kind = ["mismatch"]
+path = ["msg_sig", "interfaceID/"]
+category = "evm-only"
+title = "Function selectors (`msg.sig`, `interfaceId`)"
+meaning = "These values are EVM function selectors: the first 4 bytes of the Keccak hash of the function signature. Soroban calls functions by name, so there are no selectors and the values cannot match."
+suggestion = "sorobench: filter `msg.sig`, `msg.data` and `interfaceId` as EVM-only."
+docs = "Not applicable on Soroban."
+
+[[rule]]
+id = "evm-calldata-shape"
+kind = ["no-revert", "mismatch"]
+path = ["calldata_arrays_too_large", "bool_out_of_bounds", "signextend_int32_v2", "calldata_array_invalid_length", "dirty_calldata", "bool_conversion", "calldata_nested_array_static_reencode", "free_runtimecode"]
+category = "evm-only"
+title = "Malformed or raw EVM calldata"
+meaning = "These tests send deliberately malformed EVM calldata (a `bool` with value 2, wrong array lengths, dirty padding) or inspect EVM bytecode, and expect the EVM decoder to reject it. Soroban passes typed host values, so the malformed input cannot be expressed."
+suggestion = "sorobench: mark these as NoFaithful instead of failures."
+docs = "Not applicable on Soroban."
+
+[[rule]]
+id = "evm-fallback-receive"
+kind = ["mismatch"]
+path = ["fallback/", "receive/"]
+category = "evm-only"
+title = "Fallback and receive functions"
+meaning = "These tests call a contract with empty or unknown calldata to trigger `fallback()`/`receive()`. Soroban invokes functions by name and has no fallback dispatch, so the fallback never runs."
+suggestion = "sorobench: filter fallback/receive-triggering calls."
+docs = "Not applicable on Soroban."
+
+[[rule]]
+id = "test-env-block"
+kind = ["mismatch"]
+path = ["state/block_number", "state/block_timestamp"]
+category = "tool"
+title = "Block number / timestamp start at 0 in sorobench"
+meaning = "solc's test framework advances the block number and timestamp with every transaction; sorobench's local Soroban environment keeps them at 0. `block.number` and `block.timestamp` are supported by Solang, so this is a test-environment difference."
+suggestion = "sorobench: advance the ledger sequence and timestamp between calls like solc's framework."
+docs = "docs/targets/soroban_support_matrix.rst, 'Soroban utilities': block.timestamp and block.number supported."
+
+[[rule]]
+id = "deployment-failed"
+kind = ["trap"]
+match = ["contract deployment failed"]
+category = "review"
+title = "Contract fails while being deployed"
+meaning = "The contract's constructor (or state initialisation) fails on the Soroban host, so no call can run. On the EVM the same contract deploys normally. Likely a Solang bug in constructor or initializer code."
+suggestion = "Minimise the constructor/initialisers and check the host error."
+docs = "docs/targets/soroban_support_matrix.rst, 'Contract model' (constructors supported)."
+
+[[rule]]
+id = "budget-exceeded"
+kind = ["trap"]
+match = ["Budget, ExceededLimit"]
+category = "review"
+title = "Contract exceeds the Soroban budget"
+meaning = "The call used more CPU or memory than Soroban allows, even with sorobench's unlimited budget setting. This usually means a runaway loop or unbounded allocation in the generated code."
+suggestion = "Minimise and check for a loop that does not terminate."
+docs = ""
