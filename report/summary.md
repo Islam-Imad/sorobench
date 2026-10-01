@@ -7,227 +7,228 @@
 
 ## Headline
 
-Of **1395** candidates (1503 − 81 filtered − 27 housekeeping), **381 (27.3%)** pass; **588** gaps (mismatch/trap + non-filtered compile-fail) — solang's TODO list; **369** crashes and **21** timeouts (solang should reject cleanly / not hang).
+Of **1235** candidates (1503 − 241 filtered − 27 housekeeping), **386 (31.3%)** pass; **579** gaps (mismatch/trap + non-filtered compile-fail) — solang's TODO list; **209** crashes and **22** timeouts (solang should reject cleanly / not hang).
 
-**81** tests excluded (EVM-only, Soroban platform can't express — see the exclusion ledger below).
+**241** tests excluded (EVM-only, Soroban platform can't express — see the exclusion ledger below).
 
-Call-level across ran files: **1380 pass**, **269 fail**, 239 other (skipped/nofaithful/unsupported).
+Call-level across ran files: **1387 pass**, **285 fail**, 246 other (skipped/nofaithful/unsupported).
 
 ## Buckets (file-level)
 
 | bucket | files | % |
 |---|---:|---:|
-| PASS_ALL | 337 | 22.4% |
-| PASS_SOME | 44 | 2.9% |
-| HAS_FAIL | 105 | 7.0% |
-| ONLY_OTHER | 36 | 2.4% |
-| GAP | 483 | 32.1% |
-| FILTERED | 81 | 5.4% |
+| PASS_ALL | 341 | 22.7% |
+| PASS_SOME | 45 | 3.0% |
+| HAS_FAIL | 112 | 7.5% |
+| ONLY_OTHER | 38 | 2.5% |
+| GAP | 467 | 31.1% |
+| FILTERED | 241 | 16.0% |
+| UNSUPPORTED | 1 | 0.1% |
 | NO_BLOCK | 27 | 1.8% |
-| CRASH | 369 | 24.6% |
-| TIMEOUT | 21 | 1.4% |
+| CRASH | 209 | 13.9% |
+| TIMEOUT | 22 | 1.5% |
 
 ## By directory
 
 | dir | files | pass_all | pass_some | has_fail | gap | filtered | other |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| (root) | 23 | 7 | 2 | 3 | 2 | 0 | 9 |
-| abiEncoderV1 | 30 | 4 | 0 | 8 | 10 | 1 | 7 |
-| abiEncoderV2 | 62 | 1 | 3 | 8 | 20 | 1 | 29 |
+| (root) | 23 | 7 | 2 | 3 | 2 | 2 | 7 |
+| abiEncoderV1 | 30 | 4 | 0 | 8 | 10 | 4 | 4 |
+| abiEncoderV2 | 62 | 1 | 3 | 8 | 19 | 12 | 19 |
 | abiencodedecode | 19 | 3 | 0 | 0 | 12 | 1 | 3 |
 | accessor | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | arithmetics | 13 | 4 | 0 | 4 | 1 | 1 | 3 |
-| array | 227 | 69 | 8 | 4 | 99 | 0 | 47 |
-| asmForLoop | 3 | 0 | 0 | 0 | 0 | 0 | 3 |
-| builtinFunctions | 21 | 6 | 0 | 10 | 0 | 2 | 3 |
+| array | 227 | 69 | 8 | 5 | 99 | 17 | 29 |
+| asmForLoop | 3 | 0 | 0 | 0 | 0 | 3 | 0 |
+| builtinFunctions | 21 | 6 | 0 | 10 | 0 | 4 | 1 |
 | calldata | 24 | 3 | 0 | 1 | 16 | 1 | 3 |
-| cleanup | 16 | 2 | 0 | 5 | 6 | 2 | 1 |
+| cleanup | 16 | 2 | 0 | 5 | 6 | 3 | 0 |
 | constantEvaluator | 2 | 0 | 0 | 0 | 2 | 0 | 0 |
 | constants | 10 | 2 | 0 | 0 | 5 | 2 | 1 |
-| constructor | 22 | 1 | 4 | 1 | 5 | 0 | 11 |
+| constructor | 22 | 1 | 4 | 1 | 5 | 1 | 10 |
 | conversions | 2 | 1 | 0 | 0 | 0 | 0 | 1 |
-| deployedCodeExclusion | 12 | 0 | 0 | 0 | 3 | 0 | 9 |
-| ecrecover | 5 | 0 | 0 | 0 | 0 | 4 | 1 |
-| enums | 11 | 6 | 1 | 0 | 1 | 0 | 3 |
-| errors | 12 | 9 | 0 | 0 | 3 | 0 | 0 |
+| deployedCodeExclusion | 12 | 0 | 0 | 0 | 3 | 7 | 2 |
+| ecrecover | 5 | 0 | 0 | 0 | 0 | 5 | 0 |
+| enums | 11 | 6 | 1 | 0 | 1 | 1 | 2 |
+| errors | 12 | 11 | 0 | 0 | 1 | 0 | 0 |
 | events | 41 | 16 | 3 | 1 | 7 | 8 | 6 |
-| exponentiation | 3 | 0 | 0 | 0 | 1 | 1 | 1 |
+| exponentiation | 3 | 0 | 0 | 0 | 1 | 2 | 0 |
 | expressions | 19 | 11 | 0 | 0 | 7 | 1 | 0 |
-| externalContracts | 14 | 0 | 0 | 0 | 5 | 2 | 7 |
+| externalContracts | 14 | 0 | 0 | 0 | 5 | 3 | 6 |
 | externalSource | 31 | 0 | 0 | 0 | 10 | 0 | 21 |
 | fallback | 11 | 0 | 0 | 2 | 7 | 0 | 2 |
 | freeFunctions | 9 | 2 | 0 | 2 | 5 | 0 | 0 |
-| functionCall | 58 | 11 | 4 | 2 | 18 | 3 | 20 |
+| functionCall | 58 | 11 | 4 | 2 | 18 | 8 | 15 |
 | functionSelector | 1 | 0 | 0 | 0 | 1 | 0 | 0 |
-| functionTypes | 31 | 3 | 0 | 0 | 15 | 0 | 13 |
+| functionTypes | 31 | 3 | 0 | 0 | 15 | 2 | 11 |
 | getters | 12 | 6 | 0 | 0 | 6 | 0 | 0 |
-| immutable | 17 | 7 | 0 | 0 | 7 | 0 | 3 |
+| immutable | 17 | 7 | 0 | 0 | 7 | 1 | 2 |
 | inheritance | 25 | 9 | 0 | 0 | 10 | 0 | 6 |
-| inlineAssembly | 54 | 6 | 0 | 0 | 0 | 17 | 31 |
+| inlineAssembly | 54 | 6 | 0 | 0 | 0 | 46 | 2 |
 | integer | 5 | 2 | 0 | 1 | 2 | 0 | 0 |
-| interfaceID | 6 | 0 | 0 | 1 | 2 | 0 | 3 |
+| interfaceID | 6 | 0 | 0 | 2 | 2 | 0 | 2 |
 | isoltestTesting | 10 | 1 | 1 | 0 | 0 | 0 | 8 |
-| libraries | 62 | 16 | 6 | 0 | 18 | 9 | 13 |
+| libraries | 62 | 16 | 6 | 0 | 18 | 10 | 12 |
 | literals | 11 | 8 | 0 | 1 | 1 | 0 | 1 |
-| memoryManagement | 5 | 2 | 0 | 0 | 0 | 0 | 3 |
+| memoryManagement | 5 | 2 | 0 | 0 | 0 | 3 | 0 |
 | metaTypes | 1 | 0 | 0 | 0 | 0 | 0 | 1 |
-| modifiers | 30 | 0 | 0 | 0 | 10 | 0 | 20 |
-| multiSource | 15 | 0 | 0 | 0 | 15 | 0 | 0 |
-| operators | 61 | 21 | 0 | 17 | 4 | 1 | 18 |
-| optimizer | 1 | 0 | 0 | 0 | 0 | 0 | 1 |
+| modifiers | 30 | 0 | 0 | 0 | 10 | 1 | 19 |
+| multiSource | 15 | 2 | 1 | 2 | 8 | 0 | 2 |
+| operators | 61 | 21 | 0 | 17 | 4 | 11 | 8 |
+| optimizer | 1 | 0 | 0 | 0 | 0 | 1 | 0 |
 | payable | 1 | 0 | 0 | 0 | 0 | 1 | 0 |
 | receive | 3 | 0 | 0 | 1 | 0 | 0 | 2 |
-| revertStrings | 24 | 2 | 1 | 5 | 3 | 0 | 13 |
-| reverts | 10 | 3 | 0 | 0 | 0 | 0 | 7 |
+| revertStrings | 24 | 2 | 1 | 5 | 3 | 1 | 12 |
+| reverts | 10 | 3 | 0 | 0 | 0 | 7 | 0 |
 | salted_create | 3 | 0 | 0 | 0 | 2 | 0 | 1 |
-| shanghai | 2 | 1 | 0 | 0 | 0 | 0 | 1 |
+| shanghai | 2 | 1 | 0 | 0 | 0 | 1 | 0 |
 | smoke | 10 | 2 | 2 | 0 | 4 | 2 | 0 |
 | specialFunctions | 3 | 0 | 0 | 0 | 2 | 0 | 1 |
-| state | 19 | 0 | 0 | 3 | 0 | 13 | 3 |
+| state | 19 | 0 | 0 | 3 | 0 | 14 | 2 |
 | statements | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
-| storage | 18 | 8 | 1 | 0 | 4 | 0 | 5 |
+| storage | 18 | 8 | 1 | 1 | 4 | 0 | 4 |
 | strings | 13 | 10 | 0 | 0 | 3 | 0 | 0 |
-| structs | 72 | 13 | 3 | 2 | 38 | 0 | 16 |
-| tryCatch | 19 | 0 | 0 | 0 | 5 | 0 | 14 |
-| types | 35 | 11 | 0 | 6 | 10 | 0 | 8 |
+| structs | 72 | 12 | 3 | 3 | 38 | 5 | 11 |
+| tryCatch | 19 | 0 | 0 | 0 | 5 | 6 | 8 |
+| types | 35 | 11 | 0 | 7 | 10 | 0 | 7 |
 | underscore | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
-| uninitializedFunctionPointer | 6 | 0 | 0 | 0 | 0 | 0 | 6 |
-| userDefinedValueType | 30 | 1 | 0 | 0 | 8 | 4 | 17 |
-| using | 15 | 4 | 1 | 0 | 9 | 0 | 1 |
+| uninitializedFunctionPointer | 6 | 0 | 0 | 0 | 0 | 2 | 4 |
+| userDefinedValueType | 30 | 1 | 0 | 0 | 6 | 11 | 12 |
+| using | 15 | 5 | 1 | 0 | 5 | 0 | 4 |
 | variables | 9 | 2 | 0 | 0 | 6 | 0 | 1 |
-| various | 63 | 10 | 1 | 1 | 29 | 2 | 20 |
-| viaYul | 91 | 25 | 2 | 16 | 23 | 2 | 23 |
+| various | 63 | 10 | 1 | 1 | 29 | 13 | 9 |
+| viaYul | 91 | 25 | 2 | 16 | 23 | 17 | 8 |
 | virtualFunctions | 6 | 2 | 1 | 0 | 1 | 0 | 2 |
 
-## Failures (mismatch / trap) — 105 file(s)
+## Failures (mismatch / trap) — 112 file(s)
 
-- `abiEncoderV1/abi_decode_dynamic_array.sol`
-- `abiEncoderV1/abi_decode_static_array.sol`
-- `abiEncoderV1/abi_decode_static_array_v2.sol`
-- `abiEncoderV1/abi_decode_trivial.sol`
-- `abiEncoderV1/abi_decode_v2_calldata.sol`
-- `abiEncoderV1/abi_encode_call.sol`
-- `abiEncoderV1/calldata_arrays_too_large.sol`
-- `abiEncoderV1/memory_dynamic_array_and_calldata_bytes.sol` — MISMATCH: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
-- `abiEncoderV2/bool_out_of_bounds.sol`
-- `abiEncoderV2/calldata_nested_array_reencode.sol` — MISMATCH: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
-- `abiEncoderV2/calldata_nested_array_static_reencode.sol` — UNSUPPORTED: `f`: 3 arg word(s) match no overload's parameters
-- `abiEncoderV2/calldata_overlapped_nested_dynamic_arrays.sol` — UNSUPPORTED: `f_memory`: 7 arg word(s) match no overload's parameters
-- `abiEncoderV2/calldata_struct_array_reencode.sol` — MISMATCH: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
-- `abiEncoderV2/enums.sol`
-- `abiEncoderV2/memory_dynamic_array_and_calldata_bytes.sol` — MISMATCH: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
-- `abiEncoderV2/storage_array_encoding.sol` — MISMATCH: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
-- `arithmetics/checked_add_v1.sol` — MISMATCH: expected [Int(0)], got Int(65536)
-- `arithmetics/checked_add_v2.sol`
-- `arithmetics/checked_called_by_unchecked.sol` — MISMATCH: expected [Int(0)], got Int(65536)
-- `arithmetics/unchecked_called_by_checked.sol` — MISMATCH: expected [Int(511)], got Int(66047)
-- `array/memory_arrays_of_various_sizes.sol`
-- `array/push/array_push_nested_from_memory.sol`
-- `array/push/push_no_args_struct.sol` — MISMATCH: expected [Int(84)], got Int(0)
-- `array/string_bytes_conversion.sol` — MISMATCH: expected [Int(6)], got Int(0)
-- `builtinFunctions/iterated_keccak256_with_bytes.sol` — MISMATCH: expected [Bytes([179, 56, 238, 252, 226, 6, 249, 245, 123, 131, 170, 115, 141, 238, 205, 83, 38, 220, 75, 114, 221, 129, 238, 106, 124, 98, 26, 111, 1…
-- `builtinFunctions/keccak256.sol` — MISMATCH: expected [Bytes([138, 53, 172, 251, 193, 95, 248, 26, 57, 174, 125, 52, 79, 215, 9, 242, 142, 134, 0, 180, 170, 140, 101, 198, 182, 75, 254, 127, 227,…
-- `builtinFunctions/keccak256_multiple_arguments.sol` — MISMATCH: expected [Bytes([188, 116, 10, 152, 170, 229, 146, 62, 143, 4, 201, 170, 121, 140, 158, 232, 47, 105, 227, 25, 153, 118, 153, 242, 120, 44, 64, 130, 1…
-- `builtinFunctions/keccak256_multiple_arguments_with_numeric_literals.sol` — MISMATCH: expected [Bytes([136, 172, 212, 95, 117, 144, 126, 124, 86, 3, 24, 188, 26, 82, 73, 133, 10, 9, 153, 196, 137, 103, 23, 177, 22, 125, 5, 209, 22, 230,…
-- `builtinFunctions/keccak256_multiple_arguments_with_string_literals.sol` — MISMATCH: expected [Bytes([105, 144, 243, 100, 118, 220, 65, 43, 28, 75, 170, 72, 226, 217, 244, 170, 75, 179, 19, 246, 31, 218, 54, 124, 143, 219, 187, 34, 50,…
-- `builtinFunctions/keccak256_packed.sol` — MISMATCH: expected [Bytes([210, 112, 40, 91, 153, 102, 254, 252, 113, 85, 97, 239, 205, 9, 213, 182, 168, 222, 177, 85, 150, 247, 197, 60, 180, 161, 187, 115, 1…
-- `builtinFunctions/msg_sig.sol` — MISMATCH: expected [Bytes([47, 190, 189, 56])], got Bytes([0, 0, 0, 0])
-- `builtinFunctions/msg_sig_after_internal_call_is_same.sol` — MISMATCH: expected [Bytes([47, 190, 189, 56])], got Bytes([0, 0, 0, 0])
-- `builtinFunctions/sha256.sol` — MISMATCH: expected [Bytes([227, 137, 144, 208, 199, 252, 0, 152, 128, 169, 192, 124, 35, 132, 46, 136, 108, 107, 189, 201, 100, 206, 107, 221, 88, 23, 173, 53, …
-- `builtinFunctions/sha256_packed.sol` — MISMATCH: expected [Bytes([128, 78, 13, 112, 3, 207, 215, 15, 201, 37, 220, 16, 49, 116, 217, 248, 152, 235, 177, 66, 236, 194, 162, 134, 218, 26, 189, 34, 172,…
-- `calldata/calldata_bytes_to_memory_encode.sol` — MISMATCH: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
-- `cleanup/bool_conversion_v2.sol`
-- `cleanup/cleanup_bytes_types_shortening_OldCodeGen.sol`
-- `cleanup/cleanup_bytes_types_shortening_newCodeGen.sol` — MISMATCH: expected [Bytes([255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])], got Bytes([0, 0, 0, 0, 0, 0, 0…
-- `cleanup/exp_cleanup.sol` — MISMATCH: expected [Int(1)], got Int(0)
-- `cleanup/exp_cleanup_direct.sol` — MISMATCH: expected [Int(1)], got Int(0)
-- `constructor/base_constructor_arguments.sol` — MISMATCH: expected [Int(49)], got Int(0)
-- `constructor_inheritance_init_order.sol` — SKIP: constructor (deploy handled at registration)
-- `dirty_calldata_bytes.sol` — MISMATCH: expected [Bool(true)], got Bool(false)
-- `events/event_really_really_lots_of_data_from_storage.sol`
-- `fallback/falback_return.sol` — SKIP: low-level call
-- `fallback/short_data_calls_fallback.sol` — SKIP: low-level call
-- `freeFunctions/free_namesake_contract_function.sol`
-- `freeFunctions/free_runtimecode.sol` — MISMATCH: expected [Bool(true)], got Bool(false)
-- `functionCall/delegatecall_return_value_pre_byzantium.sol`
-- `functionCall/inheritance/super_skip_unimplemented_in_interface.sol` — MISMATCH: expected [Int(42)], got Int(0)
-- `integer/uint.sol`
-- `interfaceID/interfaces.sol` — MISMATCH: expected [Bytes([25, 255, 29, 33])], got Bytes([133, 41, 88, 119])
-- `literals/ternary_operator_with_literal_types_overflow.sol`
-- `operators/shifts/shift_cleanup.sol` — MISMATCH: expected [Int(0)], got Int(256)
-- `operators/shifts/shift_cleanup_garbled.sol` — MISMATCH: expected [Int(0)], got Int(255)
-- `operators/shifts/shift_left.sol` — MISMATCH: expected [Int(0)], got Int(16998)
-- `operators/shifts/shift_left_assignment.sol` — MISMATCH: expected [Int(0)], got Int(16998)
-- `operators/shifts/shift_left_uint32.sol` — MISMATCH: expected [Int(0)], got Int(16998)
-- `operators/shifts/shift_left_uint8.sol` — MISMATCH: expected [Int(0)], got Int(26112)
-- `operators/shifts/shift_overflow.sol` — MISMATCH: expected [Int(0)], got Int(65280)
-- … and 45 more
+- `abiEncoderV1/abi_decode_dynamic_array.sol` — TRAP `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV1/abi_decode_static_array.sol` — TRAP `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV1/abi_decode_static_array_v2.sol` — TRAP `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV1/abi_decode_trivial.sol` — TRAP `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV1/abi_decode_v2_calldata.sol` — TRAP `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV1/abi_encode_call.sol` — TRAP `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV1/calldata_arrays_too_large.sol` — NO-REVERT `f(uint256,uint256[],uint256)`: returned Int(7) instead of reverting
+- `abiEncoderV1/memory_dynamic_array_and_calldata_bytes.sol` — MISMATCH `f(uint256[],bytes)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+- `abiEncoderV2/bool_out_of_bounds.sol` — NO-REVERT `f(bool)`: returned Bool(true) instead of reverting
+- `abiEncoderV2/calldata_nested_array_reencode.sol` — MISMATCH `f(uint256[][])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+- `abiEncoderV2/calldata_nested_array_static_reencode.sol` — NO-REVERT `f(uint256[3][])`: returned (void) instead of reverting
+- `abiEncoderV2/calldata_overlapped_nested_dynamic_arrays.sol` — MISMATCH `f_encode(uint256[][])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+- `abiEncoderV2/calldata_struct_array_reencode.sol` — MISMATCH `f((uint256[]))`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+- `abiEncoderV2/enums.sol` — NO-REVERT `f(uint8)`: returned Int(2) instead of reverting
+- `abiEncoderV2/memory_dynamic_array_and_calldata_bytes.sol` — MISMATCH `f(uint256[],bytes)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+- `abiEncoderV2/storage_array_encoding.sol` — MISMATCH `h(uint256[2][])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+- `arithmetics/checked_add_v1.sol` — MISMATCH `f(uint16,uint16)`: expected [Int(0)], got Int(65536) [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `arithmetics/checked_add_v2.sol` — NO-REVERT `f(uint16,uint16)`: returned Int(65536) instead of reverting [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `arithmetics/checked_called_by_unchecked.sol` — NO-REVERT `f(uint16,uint16,uint16)`: returned Int(115970) instead of reverting [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `arithmetics/unchecked_called_by_checked.sol` — MISMATCH `f(uint16)`: expected [Int(511)], got Int(66047) [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `array/dynamic_array_cleanup.sol` — TRAP `fill()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
+- `array/memory_arrays_of_various_sizes.sol` — TRAP `f(uint256,uint256)`: Error(Context, InvalidAction); log: runtime_error: array index out of bounds in test.sol:6:13-20 [warning: conversion truncates uint256 to uint32, as memory size is type uint32 on target Soroban]
+- `array/push/array_push_nested_from_memory.sol` — TRAP `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput) [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32; uint120 is not supported by the Soroban runtime and will be rounded up to uint128]
+- `array/push/push_no_args_struct.sol` — TRAP `a(uint256)`: Error(Context, InvalidAction); log: VM call trapped with HostError, a, Error(Value, InvalidInput)
+- `array/string_bytes_conversion.sol` — TRAP `f(string,uint256)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `builtinFunctions/iterated_keccak256_with_bytes.sol` — MISMATCH `foo()`: expected [Bytes([179, 56, 238, 252, 226, 6, 249, 245, 123, 131, 170, 115, 141, 238, 205, 83, 38, 220, 75, 114, 221, 129, 238, 106, 124, 98, 26, 111, 172, 183, 172, 220])], got Bytes([62, 233, 39, 239, 101, 116, 170, 92, 129, 199, 84, 100, 208, 1, 187, 160, 44, 28, 109, 8, 248, 81, …
+- `builtinFunctions/keccak256.sol` — MISMATCH `f(int256)`: expected [Bytes([138, 53, 172, 251, 193, 95, 248, 26, 57, 174, 125, 52, 79, 215, 9, 242, 142, 134, 0, 180, 170, 140, 101, 198, 182, 75, 254, 127, 227, 107, 209, 155])], got Bytes([232, 118, 84, 63, 13, 231, 207, 171, 93, 247, 210, 160, 49, 34, 224, 210, 126, 122, 109, 46, 22, 2…
+- `builtinFunctions/keccak256_multiple_arguments.sol` — MISMATCH `foo(uint256,uint256,uint256)`: expected [Bytes([188, 116, 10, 152, 170, 229, 146, 62, 143, 4, 201, 170, 121, 140, 158, 232, 47, 105, 227, 25, 153, 118, 153, 242, 120, 44, 64, 130, 141, 185, 253, 129])], got Bytes([141, 206, 222, 132, 46, 224, 214, 38, 66, 114, 52, 11, 94, 160, 14, 40, 62, …
+- `builtinFunctions/keccak256_multiple_arguments_with_numeric_literals.sol` — MISMATCH `foo(uint256,uint16)`: expected [Bytes([136, 172, 212, 95, 117, 144, 126, 124, 86, 3, 24, 188, 26, 82, 73, 133, 10, 9, 153, 196, 137, 103, 23, 177, 22, 125, 5, 209, 22, 230, 219, 173])], got Bytes([178, 17, 255, 15, 237, 104, 186, 201, 225, 201, 23, 113, 219, 79, 46, 232, 20, 146, 41, 144, …
+- `builtinFunctions/keccak256_multiple_arguments_with_string_literals.sol` — MISMATCH `bar(uint256,uint16)`: expected [Bytes([105, 144, 243, 100, 118, 220, 65, 43, 28, 75, 170, 72, 226, 217, 244, 170, 75, 179, 19, 246, 31, 218, 54, 124, 143, 219, 187, 34, 50, 220, 97, 70])], got Bytes([178, 212, 43, 171, 24, 114, 88, 94, 54, 66, 72, 253, 56, 163, 137, 205, 239, 154, 219, 74,…
+- `builtinFunctions/keccak256_packed.sol` — MISMATCH `f(int256)`: expected [Bytes([210, 112, 40, 91, 153, 102, 254, 252, 113, 85, 97, 239, 205, 9, 213, 182, 168, 222, 177, 85, 150, 247, 197, 60, 180, 161, 187, 115, 170, 85, 172, 58])], got Bytes([93, 37, 18, 177, 61, 252, 105, 189, 203, 40, 51, 192, 140, 47, 161, 225, 26, 106, 129, 121, 170, …
+- `builtinFunctions/msg_sig.sol` — MISMATCH `foo(uint256)`: expected [Bytes([47, 190, 189, 56])], got Bytes([0, 0, 0, 0])
+- `builtinFunctions/msg_sig_after_internal_call_is_same.sol` — MISMATCH `foo(uint256)`: expected [Bytes([47, 190, 189, 56])], got Bytes([0, 0, 0, 0])
+- `builtinFunctions/sha256.sol` — MISMATCH `f(int256)`: expected [Bytes([227, 137, 144, 208, 199, 252, 0, 152, 128, 169, 192, 124, 35, 132, 46, 136, 108, 107, 189, 201, 100, 206, 107, 221, 88, 23, 173, 53, 115, 53, 238, 111])], got Bytes([62, 58, 191, 95, 229, 143, 105, 61, 158, 204, 239, 189, 31, 154, 10, 161, 196, 32, 75, 99, 93, …
+- `builtinFunctions/sha256_packed.sol` — MISMATCH `f(int256)`: expected [Bytes([128, 78, 13, 112, 3, 207, 215, 15, 201, 37, 220, 16, 49, 116, 217, 248, 152, 235, 177, 66, 236, 194, 162, 134, 218, 26, 189, 34, 172, 44, 227, 172])], got Bytes([51, 66, 57, 49, 162, 100, 198, 245, 203, 108, 179, 98, 90, 36, 201, 88, 108, 78, 153, 251, 72, 131,…
+- `calldata/calldata_bytes_to_memory_encode.sol` — MISMATCH `f(bytes)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 97, 98, 99, 100, 101, 102, 103, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+- `cleanup/bool_conversion_v2.sol` — NO-REVERT `f(bool)`: returned Int(1) instead of reverting
+- `cleanup/cleanup_bytes_types_shortening_OldCodeGen.sol` — TRAP `f()`: Error(Context, InvalidAction); log: runtime_error: require condition failed in test.sol:10:9-16 [warning: local variable 'x' is unused]
+- `cleanup/cleanup_bytes_types_shortening_newCodeGen.sol` — MISMATCH `f()`: expected [Bytes([255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])], got Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) [warning: local variable 'x' is unused]
+- `cleanup/exp_cleanup.sol` — MISMATCH `f()`: expected [Int(1)], got Int(0) [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `cleanup/exp_cleanup_direct.sol` — MISMATCH `f()`: expected [Int(1)], got Int(0) [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `constructor/base_constructor_arguments.sol` — MISMATCH `getA()`: expected [Int(49)], got Int(0)
+- `constructor_inheritance_init_order.sol` — MISMATCH `y()`: expected [Int(42)], got Int(0)
+- `dirty_calldata_bytes.sol` — MISMATCH `f(bytes)`: expected [Bool(true)], got Bool(false)
+- `events/event_really_really_lots_of_data_from_storage.sol` — TRAP `deposit()`: Error(Context, InvalidAction); log: VM call trapped with HostError, deposit, Error(Object, IndexBounds)
+- `fallback/falback_return.sol` — MISMATCH `x()`: expected [Int(1)], got Int(0)
+- `fallback/short_data_calls_fallback.sol` — MISMATCH `x()`: expected [Int(2)], got Int(0)
+- `freeFunctions/free_namesake_contract_function.sol` — NO-REVERT `f()`: returned Int(0) instead of reverting [warning: f is already defined as a function]
+- `freeFunctions/free_runtimecode.sol` — MISMATCH `f()`: expected [Bool(true)], got Bool(false)
+- `functionCall/delegatecall_return_value_pre_byzantium.sol` — TRAP `assert0_delegated()`: Error(Context, InvalidAction); log: VM call trapped with HostError, assert0_delegated, Error(Value, InvalidInput)
+- `functionCall/inheritance/super_skip_unimplemented_in_interface.sol` — MISMATCH `f()`: expected [Int(42)], got Int(0)
+- `integer/uint.sol` — TRAP `uintMaxA()`: Error(Context, InvalidAction); log: runtime_error: require condition failed in test.sol:122:3-10 [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32; uint16 is not supported by the Soroban runtime and will be rounded up to uint32; uint24 is not…
+- `interfaceID/interfaceId_events.sol` — TRAP `hello_world()`: host panicked: HostError: Error(Budget, ExceededLimit)
+- `interfaceID/interfaces.sol` — MISMATCH `hello()`: expected [Bytes([25, 255, 29, 33])], got Bytes([133, 41, 88, 119])
+- `literals/ternary_operator_with_literal_types_overflow.sol` — NO-REVERT `g()`: returned Int(318) instead of reverting [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `multiSource/free_function_resolution_override_virtual.sol` — MISMATCH `g()`: expected [Int(1337)], got Int(1338)
+- `multiSource/free_function_resolution_override_virtual_transitive.sol` — MISMATCH `g()`: expected [Int(1339)], got Int(1337)
+- `operators/shifts/shift_cleanup.sol` — MISMATCH `f()`: expected [Int(0)], got Int(256) [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `operators/shifts/shift_cleanup_garbled.sol` — MISMATCH `f()`: expected [Int(0)], got Int(255) [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `operators/shifts/shift_left.sol` — MISMATCH `f(uint256,uint256)`: expected [Int(0)], got Int(16998)
+- … and 52 more
 
-## Crashes (isolated in a subprocess) — 369 file(s)
+## Crashes (isolated in a subprocess) — 209 file(s)
 
-- `abiEncoderV1/abi_encode.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae…
-- `abiEncoderV1/abi_encode_empty_string.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/sola…
-- `abiEncoderV1/abi_encode_rational.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae…
-- `abiEncoderV1/dynamic_memory_copy.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV1/return_dynamic_types_cross_call_out_of_range_1.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV1/return_dynamic_types_cross_call_out_of_range_2.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV1/return_dynamic_types_cross_call_simple.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x6504bb117270, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/abi_encode_rational_v2.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae…
-- `abiEncoderV2/abi_encode_v2.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae…
-- `abiEncoderV2/calldata_array.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb…
-- `abiEncoderV2/calldata_array_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x5eb2b74bf4b0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_dynamic_index_access.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x5c675e1cedb0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_dynamic_static_dynamic.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb…
-- `abiEncoderV2/calldata_array_dynamic_static_short_reencode.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x590add3e3470, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_multi_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x62ba658e37a0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_static.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x55a0434eaea0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_static_index_access.sol` — solang panicked mid-compile (ICE): type 'uint256[3]' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b025…
-- `abiEncoderV2/calldata_array_struct_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x5cc1dceecf00, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_two_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x62df113e89e0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_array_two_static.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x61956a201430, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_struct_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x6480799610d0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/calldata_struct_simple.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x61d226c6a110, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/cleanup/address.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x579ded2abbd0, is_const: false, is_null: false, is_undef: fa…
-- `abiEncoderV2/cleanup/bool.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x5a6987d8b810, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/cleanup/bytesx.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x58df17ef4520, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/cleanup/dynamic_array.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV2/cleanup/function.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV2/cleanup/intx.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x5cbb4819e5e0, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/cleanup/reencoded_calldata_string.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV2/cleanup/simple_struct.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV2/cleanup/static_array.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV2/cleanup/uintx.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x5f162dedfc20, is_const: true, is_null: false, is_undef: fal…
-- `abiEncoderV2/struct/struct_validation.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `abiEncoderV2/struct/validation_function_type_inside_struct.sol` — solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at /home/islam/.cargo/git/checkouts/so…
-- `abiencodedecode/abi_encode_call_special_args.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae…
-- `abiencodedecode/abi_encode_with_selector.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/sola…
-- `abiencodedecode/abi_encode_with_selectorv2.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/sola…
-- `arithmetics/addmod_mulmod.sol` — killed by signal 6: sorobench: /home/runner/work/solang-llvm/solang-llvm/llvm-project/llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm…
-- `arithmetics/addmod_mulmod_zero.sol` — killed by signal 6: sorobench: /home/runner/work/solang-llvm/solang-llvm/llvm-project/llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm…
-- `arithmetics/checked_modifier_called_by_unchecked.sol` — solang panicked mid-compile (ICE): internal error: entered unreachable code (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/codegen/tar…
-- `array/array_storage_index_zeroed_test.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/array_storage_push_empty_length_address.sol` — killed by signal 6: sorobench: /home/runner/work/solang-llvm/solang-llvm/llvm-project/llvm/lib/IR/Instructions.cpp:636: void llvm::CallInst::init(llvm::Function…
-- `array/byte_array_storage_layout.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/bytes_length_member.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb…
-- `array/bytes_to_fixed_bytes_cleanup.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/calldata_array_two_dimensional.sol` — solang panicked mid-compile (ICE): function name "test_uint256ArrayArray2_uint256_uint256" exceeds limit (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4c…
-- `array/calldata_array_two_dimensional_1.sol` — solang panicked mid-compile (ICE): function name "test_uint256ArrayArray_uint256_uint256" exceeds limit (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd…
-- `array/copying/array_copy_cleanup_uint128.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/array_copy_cleanup_uint40.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/array_copy_clear_storage.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/array_copy_clear_storage_packed.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/bytes_inside_mappings.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb…
-- `array/copying/calldata_1d_array_into_2d_memory_array_element.sol` — solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at /home/islam/.cargo/git/checkouts/solang-b025…
-- `array/copying/copy_byte_array_to_storage.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/copy_removes_bytes_data.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb…
-- `array/copying/copying_bytes_multiassign.sol` — solang panicked mid-compile (ICE): type 'contract receiver' is not supported by the Soroban encoder for target soroban (at /home/islam/.cargo/git/checkouts/sola…
-- `array/copying/dirty_memory_bytes_to_storage_copy.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/dirty_memory_bytes_to_storage_copy_ir.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/empty_bytes_copy.sol` — solang panicked mid-compile (ICE): not implemented (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/yul/builtin.rs:25:32)
-- `array/copying/nested_array_element_calldata_to_storage.sol` — solang panicked mid-compile (ICE): not an array (at /home/islam/.cargo/git/checkouts/solang-b0258c7ae4cd28a9/e6289eb/src/sema/types.rs:1441:18)
-- … and 309 more
+- `abiEncoderV1/abi_encode.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV1/abi_encode_empty_string.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV1/abi_encode_rational.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV1/return_dynamic_types_cross_call_simple.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -1230017394", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/abi_encode_rational_v2.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV2/abi_encode_v2.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV2/abi_encode_v2_in_function_inherited_in_v1_contract.sol` — solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `abiEncoderV2/calldata_array.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `abiEncoderV2/calldata_array_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2076556223", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_dynamic_index_access.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2076556223", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_dynamic_static_dynamic.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `abiEncoderV2/calldata_array_dynamic_static_short_reencode.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 896778812", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_multi_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -1033147494", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_static.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1572939921", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_static_index_access.sol` — solang panicked mid-compile (ICE): type 'uint256[3]' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV2/calldata_array_struct_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -1842348200", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_two_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -800344695", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_array_two_static.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 519426714", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_struct_dynamic.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1501966044", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/calldata_struct_simple.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1069563627", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `abiEncoderV2/struct/validation_function_type_inside_struct.sol` — solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `abiencodedecode/abi_encode_call_special_args.sol` — solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiencodedecode/abi_encode_with_selector.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiencodedecode/abi_encode_with_selectorv2.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `arithmetics/addmod_mulmod.sol` — killed by signal 6: sorobench: llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm::InlineFunction(llvm::CallBase&, llvm::InlineFunctionInfo&, bool, llvm::AAResults*, bool, llvm::Function*): Assertion `RI->getReturnValue()->getType() == PHI->getType() && "Ret value not consist…
+- `arithmetics/addmod_mulmod_zero.sol` — killed by signal 6: sorobench: llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm::InlineFunction(llvm::CallBase&, llvm::InlineFunctionInfo&, bool, llvm::AAResults*, bool, llvm::Function*): Assertion `RI->getReturnValue()->getType() == PHI->getType() && "Ret value not consist…
+- `arithmetics/checked_modifier_called_by_unchecked.sol` — solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
+- `array/array_storage_push_empty_length_address.sol` — killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:636: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, const llvm::Twine&): Assertion `(i >= FTy->getNumParams() || FTy->getParamType(i) == Arg…
+- `array/bytes_length_member.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/calldata_array_two_dimensional.sol` — solang panicked mid-compile (ICE): function name "test_uint256ArrayArray2_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:401:41)
+- `array/calldata_array_two_dimensional_1.sol` — solang panicked mid-compile (ICE): function name "test_uint256ArrayArray_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:401:41)
+- `array/copying/bytes_inside_mappings.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/copying/calldata_1d_array_into_2d_memory_array_element.sol` — solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `array/copying/copy_removes_bytes_data.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/copying/copying_bytes_multiassign.sol` — solang panicked mid-compile (ICE): type 'contract receiver' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `array/copying/nested_array_element_calldata_to_storage.sol` — solang panicked mid-compile (ICE): not an array (at solang/src/sema/types.rs:1441:18)
+- `array/copying/nested_array_element_memory_to_storage.sol` — solang panicked mid-compile (ICE): not an array (at solang/src/sema/types.rs:1441:18)
+- `array/delete/delete_removes_bytes_data.sol` — solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/delete/memory_arrays_delete.sol` — killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<null>) is invalid!"' failed.
+- `array/evm_exceptions_out_of_band_access.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 981279420", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `array/memory.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1852907602", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `builtinFunctions/keccak256_packed_complex_types.sol` — solang panicked mid-compile (ICE): type 'function() external returns (bytes32,bytes32,bytes32)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `calldata/calldata_array_access.sol` — solang panicked mid-compile (ICE): function name "f_uint256ArrayArray_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:401:41)
+- `calldata/calldata_bytes_external.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 794233379", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `calldata/calldata_internal_library.sol` — solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -732474120", llvm_type: "i32" } }) but expected PointerValue variant (at inkwell-0.5.0/src/values/enums.rs:325:13)
+- `constructor/constructor_arguments_internal.sol` — solang panicked mid-compile (ICE): type 'contract Helper' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/constructor_function_argument.sol` — solang panicked mid-compile (ICE): type 'function() external returns (uint256)' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `constructor/constructor_function_complex.sol` — solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/functions_called_by_constructor_through_dispatch.sol` — solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/emit/instructions.rs:720:18)
+- `constructor/order_of_evaluation.sol` — solang panicked mid-compile (ICE): expr should not be in cfg: Poison (at solang/src/codegen/optimize/constant_folding.rs:671:14)
+- `constructor/store_function_in_constructor.sol` — solang panicked mid-compile (ICE): type 'function(uint256) internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/store_function_in_constructor_packed.sol` — solang panicked mid-compile (ICE): type 'function(uint32) internal returns (uint32)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/store_internal_unused_function_in_constructor.sol` — solang panicked mid-compile (ICE): type 'function() internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/store_internal_unused_library_function_in_constructor.sol` — solang panicked mid-compile (ICE): type 'function() internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor_inheritance_init_order_3_legacy.sol` — solang panicked mid-compile (ICE): expr should not be in cfg: Poison (at solang/src/codegen/optimize/constant_folding.rs:671:14)
+- `constructor_inheritance_init_order_3_viaIR.sol` — solang panicked mid-compile (ICE): expr should not be in cfg: Poison (at solang/src/codegen/optimize/constant_folding.rs:671:14)
+- `constructor_with_params_diamond_inheritance.sol` — killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, const llvm::Twine&): Assertion `(Args.size() == FTy->getNumParams() || (FTy->isVarArg() …
+- `conversions/function_type_array_to_storage.sol` — solang panicked mid-compile (ICE): type 'function() external returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `deployedCodeExclusion/library_function_deployed.sol` — solang panicked mid-compile (ICE): type 'function() internal pure returns (bytes)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `deployedCodeExclusion/static_base_function_deployed.sol` — solang panicked mid-compile (ICE): type 'function() internal pure returns (bytes)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- … and 149 more
 
-## Timeouts — 21 file(s)
+## Timeouts — 22 file(s)
 
 - `abiEncoderV2/calldata_dynamic_array_to_memory.sol` — exceeded 10s
 - `abiEncoderV2/calldata_three_dimensional_dynamic_array_index_access.sol` — exceeded 10s
@@ -247,59 +248,59 @@ Call-level across ran files: **1380 pass**, **269 fail**, 239 other (skipped/nof
 - `array/fixed_arrays_in_storage.sol` — exceeded 10s
 - `events/event_dynamic_nested_array_storage_v2.sol` — exceeded 10s
 - `literals/denominations_in_array_sizes.sol` — exceeded 10s
+- `structs/copy_struct_array_from_storage.sol` — exceeded 10s
 - `structs/copy_substructures_from_mapping.sol` — exceeded 10s
 - `structs/copy_substructures_to_mapping.sol` — exceeded 10s
 - `structs/copy_to_mapping.sol` — exceeded 10s
 
-## Gaps — clean compile-fail, portable source (solang TODO) — 483 file(s)
+## Gaps — clean compile-fail, portable source (solang TODO) — 467 file(s)
 
-- `abiEncoderV1/abi_decode_fixed_arrays.sol` — solang: Soroban external functions can return at most one value
-- `abiEncoderV1/abi_encode_calldata_slice.sol` — solang: slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; sl…
+- `abiEncoderV1/abi_decode_fixed_arrays.sol` — solang: Soroban external functions can return at most one value [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `abiEncoderV1/abi_encode_calldata_slice.sol` — solang: slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet
 - `abiEncoderV1/abi_encode_decode_simple.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV1/byte_arrays.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value
 - `abiEncoderV1/calldata_bytes_bytes32_arrays.sol` — solang: Soroban external functions can return at most one value
-- `abiEncoderV1/decode_slice.sol` — solang: slice not supported yet
-- `abiEncoderV1/dynamic_arrays.sol` — solang: Soroban external functions can return at most one value
+- `abiEncoderV1/decode_slice.sol` — solang: slice not supported yet [warning: declaration of 'f' shadows function]
+- `abiEncoderV1/dynamic_arrays.sol` — solang: Soroban external functions can return at most one value [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `abiEncoderV1/memory_params_in_external_function.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV1/return_dynamic_types_cross_call_advanced.sol` — solang: number of 32 bytes cannot be converted to type 'bytes20'
-- `abiEncoderV1/struct/struct_storage_ptr.sol` — solang: Soroban external functions can return at most one value
-- `abiEncoderV2/abi_encode_calldata_slice.sol` — solang: slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; sl…
+- `abiEncoderV1/return_dynamic_types_cross_call_advanced.sol` — solang: number of 32 bytes cannot be converted to type 'bytes20' [warning: uint160 is not supported by the Soroban runtime and will be rounded up to uint256]
+- `abiEncoderV1/struct/struct_storage_ptr.sol` — solang: Soroban external functions can return at most one value [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `abiEncoderV2/abi_encode_calldata_slice.sol` — solang: slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet; slice not supported yet
 - `abiEncoderV2/abi_encode_empty_string_v2.sol` — solang: Soroban external functions can return at most one value
-- `abiEncoderV2/abi_encode_v2_in_function_inherited_in_v1_contract.sol` — solang: file not found 'A'; 'B' not found; type 'A' not found
-- `abiEncoderV2/abi_encode_v2_in_modifier_used_in_v1_contract.sol` — solang: file not found 'A'; 'B' not found; unknown modifier 'updateStorage'; 'x' not found
+- `abiEncoderV2/abi_encode_v2_in_modifier_used_in_v1_contract.sol` — solang: Soroban external functions can return at most one value; contract construction is not supported for target soroban [warning: function declared 'view' can be declared 'pure']
 - `abiEncoderV2/abi_encoder_v2_head_overflow_with_static_array_cleanup_bug.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV2/byte_arrays.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value
 - `abiEncoderV2/calldata_array_dynamic_static_in_library.sol` — solang: Soroban external functions can return at most one value
-- `abiEncoderV2/calldata_array_function_types.sol` — solang: conversion from function() external returns (uint256)[] to function() external returns (uint256)[] not possible; conversion from function() external ret…
-- `abiEncoderV2/calldata_array_static_dynamic_static.sol` — solang: conversion from uint32[1][] to uint32 not possible; conversion from uint32[1][] to uint32 not possible; conversion from uint256[2][] to uint256 not poss…
+- `abiEncoderV2/calldata_array_function_types.sol` — solang: conversion from function() external returns (uint256)[] to function() external returns (uint256)[] not possible; conversion from function() external returns (uint256)[] to function() external returns (uint256)[] not possible
+- `abiEncoderV2/calldata_array_static_dynamic_static.sol` — solang: conversion from uint32[1][] to uint32 not possible; conversion from uint32[1][] to uint32 not possible; conversion from uint256[2][] to uint256 not possible; conversion from uint256[2][] to uint256 not possible [warning: uint8 is not supported by the Soroban runtime and will be rounded up to…
 - `abiEncoderV2/calldata_overlapped_dynamic_arrays.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV2/calldata_struct_member_offset.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV2/calldata_with_garbage.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV2/dynamic_arrays.sol` — solang: Soroban external functions can return at most one value
-- `abiEncoderV2/dynamic_nested_arrays.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value
+- `abiEncoderV2/dynamic_arrays.sol` — solang: Soroban external functions can return at most one value [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `abiEncoderV2/dynamic_nested_arrays.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `abiEncoderV2/memory_dynamic_array_and_calldata_static_array.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV2/memory_params_in_external_function.sol` — solang: Soroban external functions can return at most one value; Soroban external functions can return at most one value
 - `abiEncoderV2/struct/mediocre2_struct.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV2/struct/mediocre_struct.sol` — solang: Soroban external functions can return at most one value
 - `abiEncoderV2/struct/struct_function.sol` — solang: method 'f' does not exist
-- `abiEncoderV2/struct/struct_simple.sol` — solang: conversion to uint32 from bytes2 not allowed
+- `abiEncoderV2/struct/struct_simple.sol` — solang: conversion to uint32 from bytes2 not allowed [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32; uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `abiencodedecode/abi_decode_calldata.sol` — solang: Soroban external functions can return at most one value
 - `abiencodedecode/abi_decode_simple.sol` — solang: Soroban external functions can return at most one value
 - `abiencodedecode/abi_decode_simple_storage.sol` — solang: Soroban external functions can return at most one value
 - `abiencodedecode/abi_encode_call.sol` — solang: 'length' not found; new cannot allocate type 'usertype C.UnsignedNumber'
-- `abiencodedecode/abi_encode_call_is_consistent.sol` — solang: variable cannot be declared external; 'fPointer' not found; first argument should be function, got 'function(uint256,string) external'; first argument s…
+- `abiencodedecode/abi_encode_call_is_consistent.sol` — solang: variable cannot be declared external; 'fPointer' not found; first argument should be function, got 'function(uint256,string) external'; first argument should be function, got 'function(uint256,string) external'
 - `abiencodedecode/abi_encode_call_memory.sol` — solang: conversion from function() external to function() external not possible
-- `abiencodedecode/abi_encode_call_uint_bytes.sol` — solang: slice not supported yet; conversion to bytes2 from uint32 not allowed; conversion to uint32 from bytes2 not allowed
+- `abiencodedecode/abi_encode_call_uint_bytes.sol` — solang: slice not supported yet; conversion to bytes2 from uint32 not allowed; conversion to uint32 from bytes2 not allowed [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `abiencodedecode/abi_encode_empty_string_v1.sol` — solang: Soroban external functions can return at most one value
 - `abiencodedecode/abi_encode_with_signature.sol` — solang: Soroban external functions can return at most one value
-- `abiencodedecode/abi_encode_with_signaturev2.sol` — solang: Soroban external functions can return at most one value
+- `abiencodedecode/abi_encode_with_signaturev2.sol` — solang: Soroban external functions can return at most one value [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `abiencodedecode/contract_array.sol` — solang: new cannot construct array of 'contract C'
 - `abiencodedecode/contract_array_v2.sol` — solang: new cannot construct array of 'contract C'
-- `arithmetics/signed_mod.sol` — solang: value 57896044618658097711785492504343953926634992332820282019728792003956564819968 does not fit into type int256.; value 578960446186580977117854925043…
-- `array/array_function_pointers.sol` — solang: conversion from function() internal returns (uint256)[] to function() internal returns (uint256)[] not possible; conversion from function() internal ret…
-- `array/array_memory_allocation/array_static_return_param_zeroed_memory_index_access.sol` — solang: Soroban external functions can return at most one value
+- `arithmetics/signed_mod.sol` — solang: value 57896044618658097711785492504343953926634992332820282019728792003956564819968 does not fit into type int256.; value 57896044618658097711785492504343953926634992332820282019728792003956564819968 does not fit into type int256.
+- `array/array_function_pointers.sol` — solang: conversion from function() internal returns (uint256)[] to function() internal returns (uint256)[] not possible; conversion from function() internal returns (uint256)[][] to function() internal returns (uint256)[][] not possible; conversion from function() external returns (uint256)[] to fun…
+- `array/array_memory_allocation/array_static_return_param_zeroed_memory_index_access.sol` — solang: Soroban external functions can return at most one value [warning: return variable 'x' has never been assigned; return variable 'y' has never been assigned; return variable 'z' has never been assigned; return variable 't' has never been assigned]
 - `array/array_push_return_reference.sol` — solang: expression is not assignable
-- `array/byte_array_transitional_2.sol` — solang: conversion to bytes1 from uint32 not allowed
+- `array/byte_array_transitional_2.sol` — solang: conversion to bytes1 from uint32 not allowed [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `array/bytes_to_fixed_bytes_simple.sol` — solang: slice not supported yet
 - `array/bytes_to_fixed_bytes_too_long.sol` — solang: slice not supported yet
 - `array/calldata_array.sol` — solang: Soroban external functions can return at most one value
@@ -307,31 +308,80 @@ Call-level across ran files: **1380 pass**, **269 fail**, 239 other (skipped/nof
 - `array/calldata_array_of_struct.sol` — solang: Soroban external functions can return at most one value
 - `array/calldata_slice_access.sol` — solang: slice not supported yet; slice not supported yet
 - `array/concat/bytes_concat_different_types.sol` — solang: slice not supported yet
-- `array/copying/array_copy_calldata_storage.sol` — solang: conversion from uint256[9] to uint256[] not possible
-- `array/copying/array_copy_different_packing.sol` — solang: conversion from bytes8[] to bytes10[] not possible
+- `array/copying/array_copy_calldata_storage.sol` — solang: conversion from uint256[9] to uint256[] not possible [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32; declaration of 'c' shadows contract name]
+- `array/copying/array_copy_different_packing.sol` — solang: conversion from bytes8[] to bytes10[] not possible [warning: declaration of 'c' shadows contract name]
 - `array/copying/array_copy_including_array.sol` — solang: Soroban external functions can return at most one value
 - `array/copying/array_copy_memory_to_storage.sol` — solang: conversion from uint32[3] to uint32[] not possible
-- `array/copying/array_copy_nested_array.sol` — solang: conversion from uint256[2][] to uint256[4][] not possible
+- `array/copying/array_copy_nested_array.sol` — solang: conversion from uint256[2][] to uint256[4][] not possible [warning: c is already defined as a contract name]
 - `array/copying/array_copy_storage_storage_different_base.sol` — solang: conversion from uint64[] to uint256[] not possible
-- … and 423 more
+- `array/copying/array_copy_storage_storage_different_base_nested.sol` — solang: conversion from uint64[5][2] to uint128[6][3] not possible [warning: uint48 is not supported by the Soroban runtime and will be rounded up to uint64; uint120 is not supported by the Soroban runtime and will be rounded up to uint128]
+- … and 407 more
 
-## Exclusion ledger — filtered (EVM-only, platform can't express) — 81 file(s)
+## Exclusion ledger — filtered (EVM-only, platform can't express) — 241 file(s)
 
-- `abiEncoderV1/cleanup/cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `abiEncoderV2/cleanup/cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `abiEncoderV1/cleanup/cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32; int16 is not supported by the Soroban runtime and will be rounded up to int32]
+- `abiEncoderV1/dynamic_memory_copy.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV1/return_dynamic_types_cross_call_out_of_range_1.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV1/return_dynamic_types_cross_call_out_of_range_2.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV2/cleanup/address.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: false, is_null: false, is_undef: false, llvm_value: "i64 %0", llvm_type: "i64" } }) but expected the ArrayValue…
+- `abiEncoderV2/cleanup/bool.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -943326675", llvm_type: "i32" } }) but expected Pointer…
+- `abiEncoderV2/cleanup/bytesx.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2036327604", llvm_type: "i32" } }) but expected Pointer…
+- `abiEncoderV2/cleanup/cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32; int16 is not supported by the Soroban runtime and will be rounded up to int32]
+- `abiEncoderV2/cleanup/dynamic_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV2/cleanup/function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV2/cleanup/intx.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1339978881", llvm_type: "i32" } }) but expected Pointer…
+- `abiEncoderV2/cleanup/reencoded_calldata_string.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV2/cleanup/simple_struct.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV2/cleanup/static_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `abiEncoderV2/cleanup/uintx.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 40309076", llvm_type: "i32" } }) but expected PointerVa…
+- `abiEncoderV2/struct/struct_validation.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `abiencodedecode/abi_encode_call_declaration.sol` — .staticcall: .staticcall — EVM-only construct, no Soroban mapping
 - `arithmetics/check_var_init.sol` — msg.value: msg.value — offered by solang but no Soroban concept
+- `array/array_storage_index_zeroed_test.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/byte_array_storage_layout.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/bytes_to_fixed_bytes_cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/array_copy_cleanup_uint128.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/array_copy_cleanup_uint40.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/array_copy_clear_storage.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/array_copy_clear_storage_packed.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/copy_byte_array_to_storage.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/dirty_memory_bytes_to_storage_copy.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/dirty_memory_bytes_to_storage_copy_ir.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/copying/empty_bytes_copy.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/delete/delete_bytes_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/delete/delete_memory_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<null>) is invalid!"' failed.
+- `array/delete/delete_storage_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/delete/delete_storage_array_packed.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/invalid_encoding_for_storage_byte_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `array/pop/byte_array_pop_long_storage_empty_garbage_ref.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `asmForLoop/for_loop_break.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `asmForLoop/for_loop_continue.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `asmForLoop/for_loop_nested.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `builtinFunctions/blockhash.sol` — blockhash: blockhash — EVM-only builtin, no Soroban primitive
-- `builtinFunctions/blockhash_shadow_resolution.sol` — blockhash: blockhash — EVM-only builtin, no Soroban primitive
-- `calldata/calldata_struct_cleaning.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `builtinFunctions/blockhash_shadow_resolution.sol` — blockhash: blockhash — EVM-only builtin, no Soroban primitive [warning: 'blockhash' shadows name of a builtin]
+- `builtinFunctions/ripemd160.sol` — ripemd160: ripemd160 — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): hash builtins is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `builtinFunctions/ripemd160_packed.sol` — ripemd160: ripemd160 — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): hash builtins is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `byte_array_to_storage_cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `calldata/calldata_struct_cleaning.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `cleanup/cleanup_address_types_shortening.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `cleanup/indexed_log_topic_during_explicit_downcast.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `cleanup/indexed_log_topic_during_explicit_downcast_during_emissions.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `constants/asm_address_constant_regression.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `constants/asm_constant_file_level.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `ecrecover/ecrecover.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive
-- `ecrecover/ecrecover_abiV2.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive
+- `constructor/callvalue_check.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/bound_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/library_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/module_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/static_base_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/subassembly_deduplication.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/super_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `deployedCodeExclusion/virtual_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `ecrecover/ecrecover.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `ecrecover/ecrecover_abiV2.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
 - `ecrecover/failing_ecrecover_invalid_input.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive
-- `ecrecover/failing_ecrecover_invalid_input_proper.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive
+- `ecrecover/failing_ecrecover_invalid_input_asm.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `ecrecover/failing_ecrecover_invalid_input_proper.sol` — ecrecover: ecrecover — EVM-only builtin, no Soroban primitive [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `enums/invalid_enum_logged.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/optimize/constant_folding.rs:730:14)
 - `events/event.sol` — msg.value: msg.value — offered by solang but no Soroban concept
 - `events/event_anonymous_with_signature_collision.sol` — msg.value: msg.value — offered by solang but no Soroban concept
 - `events/event_anonymous_with_signature_collision2.sol` — msg.value: msg.value — offered by solang but no Soroban concept
@@ -340,27 +390,66 @@ Call-level across ran files: **1380 pass**, **269 fail**, 239 other (skipped/nof
 - `events/event_emit_file_level.sol` — msg.value: msg.value — offered by solang but no Soroban concept
 - `events/event_emit_from_other_contract.sol` — msg.value: msg.value — offered by solang but no Soroban concept
 - `events/event_lots_of_data.sol` — msg.value: msg.value — offered by solang but no Soroban concept
-- `exponentiation/signed_base.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `expressions/bit_operators.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `externalContracts/FixedFeeRegistrar.sol` — msg.value: msg.value — offered by solang but no Soroban concept
-- `externalContracts/deposit_contract.sol` — msg.value: msg.value — offered by solang but no Soroban concept
+- `exponentiation/signed_base.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `exponentiation/small_exp.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/Support/APInt.cpp:2106: void llvm::APInt::fromString(unsigned int, llvm::StringRef, uint8_t): Assertion `(((slen-1)*64)/22 <= numbits || radix != 10) && "Insufficient bit width"' failed.
+- `expressions/bit_operators.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32; declaration of 'x' shadows state variable; uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `externalContracts/FixedFeeRegistrar.sol` — msg.value: msg.value — offered by solang but no Soroban concept [warning: ethereum currency unit used while targeting Soroban]
+- `externalContracts/deposit_contract.sol` — msg.value: msg.value — offered by solang but no Soroban concept [warning: 'public': visibility for constructors is ignored; ethereum currency unit used while targeting Soroban]
+- `externalContracts/snark.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `functionCall/calling_uninitialized_function_in_detail.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `functionCall/calling_uninitialized_function_through_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `functionCall/delegatecall_return_value.sol` — .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
 - `functionCall/precompile_extcodesize_check.sol` — .staticcall: .staticcall — EVM-only construct, no Soroban mapping
+- `functionCall/return_size_bigger_than_expected.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `functionCall/return_size_shorter_than_expected.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `functionCall/return_size_shorter_than_expected_evm_version_after_homestead.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `functionCall/value_test.sol` — msg.value: msg.value — offered by solang but no Soroban concept
+- `functionTypes/comparison_operator_for_external_function_cleans_dirty_bits.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `functionTypes/inline_array_with_value_call_option.sol` — msg.value: msg.value — offered by solang but no Soroban concept; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/sema/mutability.rs:437:18)
+- `immutable/immutable_signed.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): type 'function() internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `inlineAssembly/basefee_berlin_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `inlineAssembly/calldata_array_assign_dynamic.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `inlineAssembly/calldata_array_assign_static.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code: Cannot assign to this expression (at solang/src/codegen/yul/statements.rs:380:13)
 - `inlineAssembly/calldata_array_read.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_assign.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_assign_from_nowhere.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_length_read.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_offset_read.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_offset_read_write.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/calldata_struct_assign_and_return.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `inlineAssembly/calldata_struct_assign.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code: Cannot assign to this expression (at solang/src/codegen/yul/statements.rs:380:13)
+- `inlineAssembly/calldata_struct_assign_and_return.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: int8 is not supported by the Soroban runtime and will be rounded up to int32]
+- `inlineAssembly/chainid.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `inlineAssembly/constant_access.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/constant_access_referencing.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/inline_assembly_memory_access.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/inline_assembly_storage_access_inside_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `inlineAssembly/difficulty.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_embedded_function_call.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_for.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_for2.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_function_call.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_function_call2.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_function_call_assignment.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_if.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_in_modifiers.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
+- `inlineAssembly/inline_assembly_memory_access.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `inlineAssembly/inline_assembly_read_and_write_stack.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_recursion.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_storage_access.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_storage_access_inside_function.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint16 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `inlineAssembly/inline_assembly_storage_access_local_var.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/inline_assembly_storage_access_via_pointer.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `inlineAssembly/inline_assembly_write_to_stack.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/inlineasm_empty_let.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `inlineAssembly/inlineasm_empty_let.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: yul variable 'y' has never been read or assigned]
+- `inlineAssembly/keccak256_assembly.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/keccak256_optimization.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/keccak256_optimizer_bug_different_memory_location.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/keccak256_optimizer_cache_bug.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/keccak_optimization_bug_string.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/keccak_yul_optimization.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/optimize_memory_store_multi_block.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/optimize_memory_store_multi_block_bugreport.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/prevrandao.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/selfbalance.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `inlineAssembly/shadowing_local_function_opcode.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `inlineAssembly/slot_access.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/slot_access_via_mapping_pointer.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/truefalse.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
@@ -373,10 +462,36 @@ Call-level across ran files: **1380 pass**, **269 fail**, 239 other (skipped/nof
 - `libraries/library_delegatecall_guard_view_staticcall.sol` — .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
 - `libraries/library_function_selectors.sol` — .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
 - `libraries/library_function_selectors_struct.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `operators/userDefined/operator_return_parameter_cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `libraries/library_return_struct_with_mapping.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:505: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New->getType() == getType() && "replaceAllUses of value with new value of different type!"'…
+- `memoryManagement/return_variable.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `memoryManagement/static_memory_array_allocation.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `memoryManagement/struct_allocation.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `modifiers/function_modifier.sol` — msg.value: msg.value — offered by solang but no Soroban concept; also crashed: solang panicked mid-compile (ICE): range 0..512 out of bounds: 256 (at bitvec-1.1.1/src/slice/api.rs:2681:1)
+- `operators/shifts/bitwise_shifting_constantinople.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/shifts/bitwise_shifting_constantinople_combined.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/shifts/bitwise_shifting_constants_constantinople.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/shifts/shift_bytes_cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/Support/APInt.cpp:2106: void llvm::APInt::fromString(unsigned int, llvm::StringRef, uint8_t): Assertion `(((slen-1)*64)/22 <= numbits || radix != 10) && "Insufficient bit width"' failed.
+- `operators/shifts/shift_bytes_cleanup_viaYul.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/Support/APInt.cpp:2106: void llvm::APInt::fromString(unsigned int, llvm::StringRef, uint8_t): Assertion `(((slen-1)*64)/22 <= numbits || radix != 10) && "Insufficient bit width"' failed.
+- `operators/shifts/shifts.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/userDefined/operator_making_pure_external_call.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/userDefined/operator_making_view_external_call.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/userDefined/operator_parameter_and_return_cleanup_between_calls.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/userDefined/operator_parameter_cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `operators/userDefined/operator_return_parameter_cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping [warning: uint8 is not supported by the Soroban runtime and will be rounded up to uint32]
+- `optimizer/shift_bytes.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `payable/no_nonpayable_circumvention_by_modifier.sol` — msg.value: msg.value — offered by solang but no Soroban concept
-- `smoke/basic.sol` — msg.value: msg.value — offered by solang but no Soroban concept
+- `revertStrings/invalid_abi_decoding_memory_v1.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `reverts/invalid_enum_as_external_arg.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/optimize/constant_folding.rs:730:14)
+- `reverts/invalid_enum_as_external_ret.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/optimize/constant_folding.rs:730:14)
+- `reverts/invalid_enum_compared.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/optimize/constant_folding.rs:730:14)
+- `reverts/invalid_enum_stored.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/optimize/constant_folding.rs:730:14)
+- `reverts/invalid_instruction.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `reverts/revert.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `reverts/revert_return_area.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `shanghai/evmone_support.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `smoke/basic.sol` — msg.value: msg.value — offered by solang but no Soroban concept [warning: declaration of 'd' shadows function]
 - `smoke/fallback.sol` — msg.value: msg.value — offered by solang but no Soroban concept
+- `state/block_basefee.sol` — block.basefee: block.basefee — EVM-only builtin, no Soroban primitive; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `state/block_chainid.sol` — block.chainid: block.chainid — EVM-only builtin, no Soroban primitive
 - `state/block_coinbase.sol` — block.coinbase: block.coinbase — EVM-only builtin, no Soroban primitive
 - `state/block_difficulty.sol` — block.difficulty: block.difficulty — EVM-only builtin, no Soroban primitive
@@ -390,12 +505,19 @@ Call-level across ran files: **1380 pass**, **269 fail**, 239 other (skipped/nof
 - `state/tx_gasprice.sol` — tx.gasprice: tx.gasprice — offered by solang but no Soroban concept
 - `state/tx_origin.sol` — tx.origin: tx.origin — EVM-only builtin, no Soroban primitive
 - `state/uncalled_blockhash.sol` — blockhash: blockhash — EVM-only builtin, no Soroban primitive
-- `userDefinedValueType/cleanup.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `userDefinedValueType/cleanup_abicoderv1.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `userDefinedValueType/storage_layout.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `userDefinedValueType/storage_signed.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `various/gasleft_decrease.sol` — gasleft: gasleft — EVM-only builtin, no Soroban primitive
-- `various/selfdestruct.sol` — selfdestruct: selfdestruct — EVM-only builtin, no Soroban primitive
-- `viaYul/storage/mappings.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
-- `viaYul/unary_operations.sol` — assembly: assembly — EVM-only construct, no Soroban mapping
+- `structs/recursive_struct_2.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `structs/struct_delete_storage_nested_small.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `structs/struct_delete_storage_small.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `structs/struct_delete_storage_with_array.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `structs/struct_delete_storage_with_arrays_small.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `tryCatch/invalid_error_encoding.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `tryCatch/malformed_error.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `tryCatch/malformed_panic.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `tryCatch/malformed_panic_2.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `tryCatch/malformed_panic_3.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `tryCatch/malformed_panic_4.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- `uninitializedFunctionPointer/uninitialized_internal_storage_function_legacy.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `uninitializedFunctionPointer/uninitialized_internal_storage_function_via_yul.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `unused_store_storage_removal_bug.sol` — assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
+- … and 41 more
 

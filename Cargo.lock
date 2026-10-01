@@ -4952,6 +4952,7 @@ dependencies = [
  "solang",
  "solang-parser 0.3.5 (git+https://github.com/Islam-Imad/solang?rev=e6289eb708d5cfbe07782dadb9c41c23ba6facfa)",
  "soroban-sdk",
+ "toml",
 ]
 
 [[package]]
