@@ -1,5 +1,5 @@
 use solang::sema::ast::Namespace;
-use soroban_sdk::{Address, Env, Val};
+use soroban_sdk::{Address, Env, TryFromVal, Val, Vec as SVec};
 
 use crate::decoder::val::{from_val, to_val};
 use crate::decoder::{abi, bytes_utils, NativeValue, SorobanType};
@@ -551,13 +551,13 @@ fn compare(
         Outcome::Returned(v) => v,
     };
     if expects_failure {
-        let what = match resolved.returns.as_slice() {
-            [] => "returned (void) instead of reverting".to_string(),
-            [ret] => match from_val(h.env(), ret_val, &ret.soroban) {
-                Ok(nv) => format!("returned {nv:?} instead of reverting"),
+        let what = if resolved.returns.is_empty() {
+            "returned (void) instead of reverting".to_string()
+        } else {
+            match from_returned(h.env(), ret_val, &resolved.returns) {
+                Ok(nv) => format!("returned {} instead of reverting", show_returned(&nv)),
                 Err(_) => "returned a value instead of reverting".to_string(),
-            },
-            _ => "returned a value instead of reverting".to_string(),
+            }
         };
         return Verdict::ExpectedFailure(what);
     }
@@ -588,11 +588,6 @@ fn compare(
         return Verdict::NoFaithful("address result (20≠32 byte)".into());
     }
 
-    // Soroban has no multi-value return, so solang would have failed to compile it.
-    if resolved.returns.len() != 1 {
-        return Verdict::Unsupported(format!("{}-value return", resolved.returns.len()));
-    }
-
     // Expected side: `// ----` words → ABI decode with the return type.
     let exp_buf = bytes_utils::encode_params(&call.expectations.result);
     let expected = match abi::abi_decode_params(&exp_buf, &tuple_abi(&resolved.returns)) {
@@ -601,19 +596,50 @@ fn compare(
         Err(e) => return Verdict::Unsupported(format!("expected decode: {e}")),
     };
 
-    // Actual side: from_val the single returned value.
-    let actual = match from_val(h.env(), ret_val, &resolved.returns[0].soroban) {
+    // Actual side: from_val each returned value.
+    let actual = match from_returned(h.env(), ret_val, &resolved.returns) {
         Ok(nv) => nv,
         Err(e) => return Verdict::Unsupported(format!("from_val: {e}")),
     };
 
-    if expected.len() == 1 && expected[0] == actual {
+    if expected == actual {
         Verdict::Pass
     } else {
         Verdict::Mismatch {
             expected: format!("{expected:?}"),
-            actual: format!("{actual:?}"),
+            actual: show_returned(&actual),
         }
+    }
+}
+
+/// Decode a call's result. One return value comes back as itself; several come
+/// back packed in one Soroban `Vec`, in declaration order (as Rust contracts
+/// return tuples).
+fn from_returned(env: &Env, val: Val, returns: &[MappedType]) -> Result<Vec<NativeValue>, String> {
+    if let [ret] = returns {
+        return Ok(vec![from_val(env, val, &ret.soroban)?]);
+    }
+    let items = SVec::<Val>::try_from_val(env, &val)
+        .map_err(|_| format!("expected a vec of {} return values", returns.len()))?;
+    if items.len() as usize != returns.len() {
+        return Err(format!(
+            "expected {} return values, got {}",
+            returns.len(),
+            items.len()
+        ));
+    }
+    returns
+        .iter()
+        .zip(items.iter())
+        .map(|(ret, item)| from_val(env, item, &ret.soroban))
+        .collect()
+}
+
+/// A single value prints as itself, several as a list.
+fn show_returned(values: &[NativeValue]) -> String {
+    match values {
+        [one] => format!("{one:?}"),
+        _ => format!("{values:?}"),
     }
 }
 
