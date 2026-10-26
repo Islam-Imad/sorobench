@@ -1,12 +1,13 @@
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{Address, IntoVal, Val};
+use soroban_sdk::{Address, IntoVal, TryFromVal, Val};
 
 use super::{
     compile_soroban, panic_message, run_isolated, run_source, Exit, Outcome, RunReport, SorobanEnv,
+    Verdict,
 };
 use crate::decoder::val::{from_val, to_val};
 use crate::decoder::NativeValue;
-use crate::decoder::SorobanType::{U32, U64};
+use crate::decoder::SorobanType::{Bool, U32, U64};
 
 fn deploy(src: &str) -> (SorobanEnv, Address) {
     let compiled = compile_soroban(src).expect("compile ok");
@@ -88,25 +89,52 @@ fn probe_overload_mangled_name() {
 }
 
 #[test]
-fn probe_multi_return_packing() {
-    let src =
-        "contract C { function f() public pure returns (uint64, bool) { return (7, true); } }";
-    match compile_soroban(src) {
-        Err(e) => eprintln!("multi-return: compile rejected → {e}"),
-        Ok(c) => {
-            let mut h = SorobanEnv::new();
-            let addr = h.register_contract(&c.wasm);
-            match h.try_invoke_contract(&addr, "f", vec![]) {
-                Outcome::Trapped(_) => eprintln!("multi-return: invoke trapped"),
-                Outcome::Returned(v) => {
-                    eprintln!(
-                        "multi-return (uint64,bool) packed as tag = {:?}",
-                        v.get_tag()
-                    )
-                }
-            }
-        }
-    }
+fn multi_return_comes_back_as_vec() {
+    let (h, addr) = deploy(
+        "contract C { function f() public pure returns (uint64, bool) { return (7, true); } }",
+    );
+    let v = h.invoke_contract(&addr, "f", vec![]);
+    let items = soroban_sdk::Vec::<Val>::try_from_val(h.env(), &v).expect("vec");
+    assert_eq!(items.len(), 2);
+    assert_eq!(
+        from_val(h.env(), items.get_unchecked(0), &U64).unwrap(),
+        NativeValue::uint_u64(7)
+    );
+    assert_eq!(
+        from_val(h.env(), items.get_unchecked(1), &Bool).unwrap(),
+        NativeValue::Bool(true)
+    );
+}
+
+#[test]
+fn run_source_compares_multi_return() {
+    // `f() -> 7, true` is the ABI tuple (uint64, bool); swapped order must mismatch.
+    let src = "contract C { \
+         function f() public pure returns (uint64, bool) { return (7, true); } \
+         function g(uint64 a, uint64 b) public pure returns (uint64, uint64) { return (b, a); } }\n\
+         // ----\n\
+         // f() -> 7, true\n\
+         // g(uint64,uint64): 1, 2 -> 2, 1\n\
+         // g(uint64,uint64): 1, 2 -> 1, 2";
+    let RunReport::Ran(verdicts) = run_source(src) else {
+        panic!("expected Ran, got a non-Ran report");
+    };
+    assert_eq!(verdicts.len(), 3);
+    assert!(
+        verdicts[0].verdict.is_pass(),
+        "f() = {:?}",
+        verdicts[0].verdict
+    );
+    assert!(
+        verdicts[1].verdict.is_pass(),
+        "g() = {:?}",
+        verdicts[1].verdict
+    );
+    assert!(
+        matches!(verdicts[2].verdict, Verdict::Mismatch { .. }),
+        "swapped g() = {:?}",
+        verdicts[2].verdict
+    );
 }
 
 #[test]
