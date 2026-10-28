@@ -17,13 +17,13 @@ pub enum Verdict {
     // Actual == expected (native-space).
     Pass,
     // Expected `FAILURE` and the call trapped.
-    FailureAsExpected,
+    RevertedAsExpected,
     // Values differ.
     Mismatch { expected: String, actual: String },
     // Expected a value but the call trapped. Carries the host error / log.
     Trapped(String),
     // Expected `FAILURE` but the call returned. Carries what it returned.
-    ExpectedFailure(String),
+    MissingRevert(String),
     // No faithful Soroban equivalent (e.g. an `address` result).
     NoFaithful(String),
     // Not run (value call / builtin / library / constructor).
@@ -36,10 +36,10 @@ impl Verdict {
     pub fn label(&self) -> &'static str {
         match self {
             Verdict::Pass => "PASS",
-            Verdict::FailureAsExpected => "PASS(revert)",
+            Verdict::RevertedAsExpected => "PASS(revert)",
             Verdict::Mismatch { .. } => "MISMATCH",
             Verdict::Trapped(_) => "TRAP",
-            Verdict::ExpectedFailure(_) => "NO-REVERT",
+            Verdict::MissingRevert(_) => "NO-REVERT",
             Verdict::NoFaithful(_) => "NoFaithful",
             Verdict::Skipped(_) => "SKIP",
             Verdict::Unsupported(_) => "UNSUPPORTED",
@@ -47,13 +47,13 @@ impl Verdict {
     }
 
     pub fn is_pass(&self) -> bool {
-        matches!(self, Verdict::Pass | Verdict::FailureAsExpected)
+        matches!(self, Verdict::Pass | Verdict::RevertedAsExpected)
     }
 
     pub fn is_fail(&self) -> bool {
         matches!(
             self,
-            Verdict::Mismatch { .. } | Verdict::Trapped(_) | Verdict::ExpectedFailure(_)
+            Verdict::Mismatch { .. } | Verdict::Trapped(_) | Verdict::MissingRevert(_)
         )
     }
 
@@ -61,7 +61,7 @@ impl Verdict {
         match self {
             Verdict::Mismatch { expected, actual } => format!("expected {expected}, got {actual}"),
             Verdict::Trapped(r)
-            | Verdict::ExpectedFailure(r)
+            | Verdict::MissingRevert(r)
             | Verdict::NoFaithful(r)
             | Verdict::Skipped(r)
             | Verdict::Unsupported(r) => r.clone(),
@@ -220,7 +220,7 @@ fn run_inner(text: &str, extras: &mut RunExtras) -> RunReport {
                 .map(|call| CallVerdict {
                     signature: call.signature.clone(),
                     verdict: match call.kind {
-                        Kind::Regular if call.expectations.failure => Verdict::FailureAsExpected,
+                        Kind::Regular if call.expectations.failure => Verdict::RevertedAsExpected,
                         Kind::Regular => Verdict::Trapped(msg.clone()),
                         _ => Verdict::Skipped("contract deployment failed".into()),
                     },
@@ -543,7 +543,7 @@ fn compare(
     let ret_val = match outcome {
         Outcome::Trapped(reason) => {
             return if expects_failure {
-                Verdict::FailureAsExpected
+                Verdict::RevertedAsExpected
             } else {
                 Verdict::Trapped(reason)
             };
@@ -559,7 +559,7 @@ fn compare(
                 Err(_) => "returned a value instead of reverting".to_string(),
             }
         };
-        return Verdict::ExpectedFailure(what);
+        return Verdict::MissingRevert(what);
     }
 
     // A setup call with no `->`: success = it didn't trap (already known).
