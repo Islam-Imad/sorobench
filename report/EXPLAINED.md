@@ -1,6 +1,6 @@
 # sorobench — explained results
 
-1503 tests from the solc semantic test suite were compiled with Solang for Soroban and run. **386 of 1235 (31.3%) pass.** 241 tests are excluded because they rely on EVM-only features, and 27 have nothing to check.
+1503 tests from the solc semantic test suite were compiled with Solang for Soroban and run. **532 of 1243 (42.8%) pass.** 233 tests are excluded because they rely on EVM-only features, and 27 have nothing to check.
 
 Every failure below is matched against sorobench's explanation dictionary, which is grounded in Solang's own Soroban documentation. A failure nothing explains is listed under **review**; it is not assumed to be a bug.
 
@@ -8,13 +8,13 @@ Every failure below is matched against sorobench's explanation dictionary, which
 
 | category | files | meaning |
 |---|---:|---|
-| **bug** | 213 | Violates Solang's documented behaviour: compiler crashes and wrong results |
-| **review** | 78 | Not explained yet: needs a human to check it against the docs |
-| **soroban-gap** | 5 | Missing on Soroban, not documented, works on Solang's other targets |
+| **bug** | 236 | Violates Solang's documented behaviour: compiler crashes and wrong results |
+| **review** | 101 | Not explained yet: needs a human to check it against the docs |
+| **soroban-gap** | 7 | Missing on Soroban, not documented, works on Solang's other targets |
 | **solang-gap** | 174 | Rejected by Solang on every target: a general Solang limitation |
-| **documented-unsupported** | 243 | Solang's docs list the feature as not supported on Soroban |
-| **documented-difference** | 60 | Solang's docs describe this behaviour as intended on Soroban |
-| **evm-only** | 262 | Relies on an EVM concept that Soroban does not have |
+| **documented-unsupported** | 51 | Solang's docs list the feature as not supported on Soroban |
+| **documented-difference** | 66 | Solang's docs describe this behaviour as intended on Soroban |
+| **evm-only** | 254 | Relies on an EVM concept that Soroban does not have |
 | **tool** | 18 | A sorobench or test-environment limitation, not Solang |
 
 A file with more than one kind of failure is counted in each of its categories.
@@ -23,50 +23,49 @@ A file with more than one kind of failure is counted in each of its categories.
 
 | # | issue | category | files |
 |---:|---|---|---:|
-| 1 | [Unsupported type crashes the Soroban encoder/decoder](#panic-unsupported-abi-type) | bug | 87 |
-| 2 | [LLVM value-kind confusion (integer where a pointer is expected)](#llvm-value-kind) | bug | 25 |
-| 3 | [LLVM assertion: call with the wrong argument types](#llvm-assert-call) | bug | 22 |
-| 4 | [Function modifiers crash Soroban dispatch](#modifier-dispatch) | bug | 19 |
-| 5 | [Unsupported builtin crashes Soroban codegen](#panic-unsupported-builtin) | bug | 17 |
-| 6 | [`try`/`catch` runs Polkadot-only code](#try-catch-polkadot-path) | bug | 10 |
-| 7 | [Other compiler crashes](#crash-other) | bug | 10 |
-| 8 | [Stack overflow on recursive struct types](#stack-overflow) | bug | 6 |
-| 9 | [Other LLVM assertion failures](#llvm-assert-other) | bug | 5 |
+| 1 | [Unsupported type crashes the Soroban encoder/decoder](#panic-unsupported-abi-type) | bug | 91 |
+| 2 | [LLVM value-kind confusion (integer where a pointer is expected)](#llvm-value-kind) | bug | 35 |
+| 3 | [LLVM assertion: call with the wrong argument types](#llvm-assert-call) | bug | 23 |
+| 4 | [Unsupported builtin crashes Soroban codegen](#panic-unsupported-builtin) | bug | 22 |
+| 5 | [Function modifiers crash Soroban dispatch](#modifier-dispatch) | bug | 19 |
+| 6 | [Other compiler crashes](#crash-other) | bug | 11 |
+| 7 | [`try`/`catch` runs Polkadot-only code](#try-catch-polkadot-path) | bug | 10 |
+| 8 | [Other LLVM assertion failures](#llvm-assert-other) | bug | 7 |
+| 9 | [Stack overflow on recursive struct types](#stack-overflow) | bug | 6 |
 | 10 | [Crash in constant folding](#constant-folding) | bug | 5 |
 | 11 | [Shifting by the full bit width gives the wrong result](#shift-by-width) | bug | 4 |
 | 12 | [Overloaded function names exceed Soroban's symbol length](#symbol-too-long) | bug | 3 |
-| 13 | [Timed out (over 10 s)](#timeout) | review | 22 |
-| 14 | [Probably caused by integer rounding (needs confirmation)](#int-width-probable) | review | 18 |
+| 13 | [Probably caused by integer rounding (needs confirmation)](#int-width-probable) | review | 26 |
+| 14 | [Timed out (over 10 s)](#timeout) | review | 12 |
 | 15 | [Hashes differ (input built with `abi.encodePacked`)](#hash-of-encode-packed) | review | 9 |
-| 16 | [Out-of-range enum values are accepted](#enum-range-not-checked) | review | 8 |
-| 17 | [Contract fails while being deployed](#deployment-failed) | review | 3 |
+| 16 | [Out-of-range enum values are accepted](#enum-range-not-checked) | review | 9 |
+| 17 | [Contract fails while being deployed](#deployment-failed) | review | 8 |
 | 18 | [Contract exceeds the Soroban budget](#budget-exceeded) | review | 1 |
-| 19 | [Rejected on Soroban only (not yet explained)](#soroban-only-rejection) | soroban-gap | 5 |
+| 19 | [Rejected on Soroban only (not yet explained)](#soroban-only-rejection) | soroban-gap | 7 |
 | 20 | [Rejected by Solang on every target](#solang-language-gap) | solang-gap | 174 |
-| 21 | [Multiple return values from public functions](#multi-return) | documented-unsupported | 201 |
-| 22 | [Creating contracts with `new Contract()`](#new-contract) | documented-unsupported | 17 |
-| 23 | [Native value transfer (`{value: …}`, `.balance`, `.transfer`)](#value-transfer-uint512) | documented-unsupported | 12 |
-| 24 | [Public getters for struct state variables](#struct-public-getter) | documented-unsupported | 9 |
-| 25 | [Structs as event parameters](#struct-in-event) | documented-unsupported | 4 |
-| 26 | [Conversions between small integers and `bytesN`](#int-width-bytes-conversion) | documented-difference | 25 |
-| 27 | [Small integer types are computed at a wider width](#int-width-overflow) | documented-difference | 23 |
-| 28 | [`abi.encode` returns Soroban handles, not ABI bytes](#abi-encode-handles) | documented-difference | 7 |
-| 29 | [`abi.decode` of bytes from outside the contract](#abi-decode-external-bytes) | documented-difference | 5 |
-| 30 | [EVM-only test that also crashes the compiler](#evm-only-also-crashed) | evm-only | 155 |
-| 31 | [EVM-only feature](#evm-only) | evm-only | 86 |
-| 32 | [Malformed or raw EVM calldata](#evm-calldata-shape) | evm-only | 9 |
-| 33 | [Function selectors (`msg.sig`, `interfaceId`)](#evm-selector-concepts) | evm-only | 4 |
-| 34 | [Ethereum address literals](#eth-address-literal) | evm-only | 3 |
-| 35 | [Fallback and receive functions](#evm-fallback-receive) | evm-only | 3 |
-| 36 | [Reading contract bytecode (`address.code`)](#address-code) | evm-only | 2 |
-| 37 | [Tests that import files from outside the test](#external-source-files) | tool | 15 |
-| 38 | [Block number / timestamp start at 0 in sorobench](#test-env-block) | tool | 2 |
-| 39 | [Not runnable by sorobench](#tool-unsupported) | tool | 1 |
+| 21 | [Creating contracts with `new Contract()`](#new-contract) | documented-unsupported | 24 |
+| 22 | [Native value transfer (`{value: …}`, `.balance`, `.transfer`)](#value-transfer-uint512) | documented-unsupported | 12 |
+| 23 | [Public getters for struct state variables](#struct-public-getter) | documented-unsupported | 11 |
+| 24 | [Structs as event parameters](#struct-in-event) | documented-unsupported | 4 |
+| 25 | [Conversions between small integers and `bytesN`](#int-width-bytes-conversion) | documented-difference | 25 |
+| 26 | [Small integer types are computed at a wider width](#int-width-overflow) | documented-difference | 25 |
+| 27 | [`abi.encode` returns Soroban handles, not ABI bytes](#abi-encode-handles) | documented-difference | 11 |
+| 28 | [`abi.decode` of bytes from outside the contract](#abi-decode-external-bytes) | documented-difference | 5 |
+| 29 | [EVM-only test that also crashes the compiler](#evm-only-also-crashed) | evm-only | 157 |
+| 30 | [EVM-only feature](#evm-only) | evm-only | 76 |
+| 31 | [Malformed or raw EVM calldata](#evm-calldata-shape) | evm-only | 9 |
+| 32 | [Function selectors (`msg.sig`, `interfaceId`)](#evm-selector-concepts) | evm-only | 4 |
+| 33 | [Ethereum address literals](#eth-address-literal) | evm-only | 3 |
+| 34 | [Fallback and receive functions](#evm-fallback-receive) | evm-only | 3 |
+| 35 | [Reading contract bytecode (`address.code`)](#address-code) | evm-only | 2 |
+| 36 | [Tests that import files from outside the test](#external-source-files) | tool | 15 |
+| 37 | [Block number / timestamp start at 0 in sorobench](#test-env-block) | tool | 2 |
+| 38 | [Not runnable by sorobench](#tool-unsupported) | tool | 1 |
 
 <a id="panic-unsupported-abi-type"></a>
 ### Unsupported type crashes the Soroban encoder/decoder
 
-**Category:** bug · **Files:** 87 · **Rule:** `panic-unsupported-abi-type`
+**Category:** bug · **Files:** 91 · **Rule:** `panic-unsupported-abi-type`
 
 **What it means.** The test passes a type across the contract boundary that Solang cannot encode for Soroban (function types, user-defined value types, contract types, …). Solang knows it is unsupported, but raises a panic instead of a compile error. Solang's docs state that unsupported constructs should be rejected with a diagnostic, not crash.
 
@@ -76,23 +75,25 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
-- `abiEncoderV1/abi_encode.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiEncoderV1/abi_encode_empty_string.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiEncoderV1/abi_encode_rational.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiEncoderV2/abi_encode_rational_v2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiEncoderV2/abi_encode_v2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiEncoderV2/abi_encode_v2_in_function_inherited_in_v1_contract.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `abiEncoderV2/calldata_array_static_index_access.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint256[3]' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiEncoderV2/struct/validation_function_type_inside_struct.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `abiencodedecode/abi_encode_call_special_args.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiencodedecode/abi_encode_with_selector.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `abiencodedecode/abi_encode_with_selectorv2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `array/copying/calldata_1d_array_into_2d_memory_array_element.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `array/copying/copying_bytes_multiassign.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract receiver' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `abiEncoderV1/abi_encode.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiEncoderV1/abi_encode_empty_string.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiEncoderV1/abi_encode_rational.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiEncoderV2/abi_encode_rational_v2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiEncoderV2/abi_encode_v2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiEncoderV2/abi_encode_v2_in_function_inherited_in_v1_contract.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `abiEncoderV2/calldata_array_static_index_access.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint256[3]' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiEncoderV2/struct/mediocre2_struct.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `abiEncoderV2/struct/mediocre_struct.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `abiEncoderV2/struct/validation_function_type_inside_struct.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `abiencodedecode/abi_encode_call_special_args.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiencodedecode/abi_encode_with_selector.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `abiencodedecode/abi_encode_with_selectorv2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `array/copying/calldata_1d_array_into_2d_memory_array_element.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `array/copying/copying_bytes_multiassign.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract receiver' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
 - `builtinFunctions/keccak256_packed_complex_types.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external returns (bytes32,bytes32,bytes32)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/ta…
-- `constructor/constructor_arguments_internal.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract Helper' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/constructor_arguments_internal.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract Helper' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
 - `constructor/constructor_function_argument.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external returns (uint256)' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/en…
-- `constructor/constructor_function_complex.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `constructor/constructor_function_complex.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
 - `constructor/store_function_in_constructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function(uint256) internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/sor…
 - `constructor/store_function_in_constructor_packed.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function(uint32) internal returns (uint32)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/sorob…
 - `constructor/store_internal_unused_function_in_constructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/en…
@@ -100,76 +101,78 @@ A file with more than one kind of failure is counted in each of its categories.
 - `conversions/function_type_array_to_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/en…
 - `deployedCodeExclusion/library_function_deployed.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal pure returns (bytes)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban…
 - `deployedCodeExclusion/static_base_function_deployed.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal pure returns (bytes)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban…
-- `events/event_indexed_function.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `events/event_indexed_function2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `fallback/call_forward_bytes.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract receiver' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `functionCall/calling_nonexisting_contract_throws.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract D' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `functionCall/calling_uninitialized_function.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `functionCall/creation_function_call_with_args.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `functionCall/creation_function_call_with_salt.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `functionCall/external_call_to_nonexisting.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract I' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `functionCall/external_call_to_nonexisting_debugstrings.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract I' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `events/event_indexed_function.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `events/event_indexed_function2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `fallback/call_forward_bytes.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract receiver' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `functionCall/calling_nonexisting_contract_throws.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract D' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `functionCall/calling_uninitialized_function.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `functionCall/creation_function_call_with_args.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `functionCall/creation_function_call_with_salt.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `functionCall/external_call_to_nonexisting.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract I' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `functionCall/external_call_to_nonexisting_debugstrings.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract I' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
 - `functionTypes/call_to_zero_initialized_function_type_ir.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function(uint256) external returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/sor…
 - `functionTypes/call_to_zero_initialized_function_type_legacy.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function(uint256) external returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/sor…
-- `functionTypes/external_functions_with_calldata_args_assigned_to_function_pointers_with_memory_type.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `functionTypes/external_functions_with_calldata_args_assigned_to_function_pointers_with_memory_type.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
 - `functionTypes/function_delete_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/en…
-- `functionTypes/mapping_of_functions.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `functionTypes/mapping_of_functions.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
 - `functionTypes/pass_function_types_externally.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function(uint256) external returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/sor…
-- `functionTypes/selector_expression_side_effect.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `functionTypes/uninitialized_internal_storage_function_call.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `functionTypes/selector_expression_side_effect.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `functionTypes/uninitialized_internal_storage_function_call.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
 - `immutable/internal_function_pointer.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal view returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/sorob…
-- `isoltestTesting/balance_other_contract.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract Other' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `libraries/external_call_with_function_pointer_parameter.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `libraries/internal_library_function_attached_to_external_function_type.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `libraries/library_references_preserve.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `operators/userDefined/attaching_and_defining_operator_with_same_function.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Int' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `operators/userDefined/checked_operators.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype U8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `operators/userDefined/multiple_operator_definitions_different_types_different_functions_separate_directives.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype SmallInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `operators/userDefined/multiple_operator_definitions_same_type_same_function_same_directive.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Int' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `operators/userDefined/operator_definition_shadowing_builtin_keccak256.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Int' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `operators/userDefined/operator_evaluation_order.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Bool' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `operators/userDefined/recursive_operator.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Uint' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `operators/userDefined/unchecked_operators.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype U8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `revertStrings/bubble.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `specialFunctions/abi_encode_with_signature_from_string.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
+- `isoltestTesting/balance_other_contract.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract Other' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `libraries/external_call_with_function_pointer_parameter.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `libraries/internal_library_function_attached_to_external_function_type.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `libraries/library_references_preserve.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `operators/userDefined/attaching_and_defining_operator_with_same_function.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Int' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `operators/userDefined/checked_operators.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype U8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `operators/userDefined/multiple_operator_definitions_different_types_different_functions_separate_directives.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype SmallInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `operators/userDefined/multiple_operator_definitions_same_type_same_function_same_directive.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Int' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `operators/userDefined/operator_definition_shadowing_builtin_keccak256.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Int' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `operators/userDefined/operator_evaluation_order.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Bool' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `operators/userDefined/recursive_operator.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Uint' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `operators/userDefined/unchecked_operators.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype U8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `revertStrings/bubble.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `specialFunctions/abi_encode_with_signature_from_string.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
 - `storage/packed_functions.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal returns (uint256)' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/en…
-- `types/external_function_to_address.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `types/mapping/user_defined_types_mapping_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype B' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `types/mapping_contract_key.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `types/mapping_contract_key_getter.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `types/mapping_contract_key_library.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `uninitializedFunctionPointer/invalidInConstructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `uninitializedFunctionPointer/invalidStoredInConstructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `uninitializedFunctionPointer/store2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `uninitializedFunctionPointer/storeInConstructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/abicodec.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype C.MyInt' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `userDefinedValueType/constant.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype T' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/conversion.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyUInt8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/conversion_abicoderv1.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyUInt8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/erc20.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype UFixed18' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `userDefinedValueType/fixedpoint.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype UFixed256x18' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14…
-- `userDefinedValueType/mapping_key.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/multisource.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/multisource_module.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `userDefinedValueType/ownable.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Ownable.Owner' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:1…
-- `userDefinedValueType/wrap_unwrap_via_contract_name.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype C.T' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `userDefinedValueType/zero_cost_abstraction_comparison_userdefined.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `using/using_global_for_global.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype global' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `using/using_global_invisible.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype T' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `various/destructuring_assignment.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint256 storage' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `various/external_types_in_calls.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C1' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `various/write_storage_external.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `types/external_function_to_address.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `types/mapping/user_defined_types_mapping_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype B' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `types/mapping_contract_key.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `types/mapping_contract_key_getter.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `types/mapping_contract_key_library.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract A' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `uninitializedFunctionPointer/invalidInConstructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `uninitializedFunctionPointer/invalidStoredInConstructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `uninitializedFunctionPointer/store2.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `uninitializedFunctionPointer/storeInConstructor.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() internal' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/abicodec.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype C.MyInt' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `userDefinedValueType/constant.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype T' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/conversion.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyUInt8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/conversion_abicoderv1.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyUInt8' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/erc20.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype UFixed18' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `userDefinedValueType/fixedpoint.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype UFixed256x18' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14…
+- `userDefinedValueType/mapping_key.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/multisource.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/multisource_module.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/ownable.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype Ownable.Owner' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:1…
+- `userDefinedValueType/simple.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `userDefinedValueType/wrap_unwrap_via_contract_name.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype C.T' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `userDefinedValueType/zero_cost_abstraction_comparison_userdefined.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype MyInt' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `using/using_global_for_global.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype global' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `using/using_global_invisible.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype T' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `using/using_global_library.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'usertype T' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `various/destructuring_assignment.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'uint256 storage' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `various/external_types_in_calls.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C1' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `various/write_storage_external.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'contract C' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
 - `viaYul/conversion/function_cast.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function(uint256) external returns (uint256)' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/sor…
-- `viaYul/function_address.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
-- `viaYul/function_pointers.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:658:14)
-- `viaYul/function_selector.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:255:14)
+- `viaYul/function_address.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
+- `viaYul/function_pointers.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function_selector' is not supported by the Soroban encoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:662:14)
+- `viaYul/function_selector.sol` — compiler crashed: solang panicked mid-compile (ICE): type 'function() external' is not supported by the Soroban decoder for target soroban (at solang/src/codegen/targets/soroban/encoding.rs:259:14)
 
 </details>
 
 <a id="llvm-value-kind"></a>
 ### LLVM value-kind confusion (integer where a pointer is expected)
 
-**Category:** bug · **Files:** 25 · **Rule:** `llvm-value-kind`
+**Category:** bug · **Files:** 35 · **Rule:** `llvm-value-kind`
 
 **What it means.** Solang's code generator hands LLVM an integer constant where a pointer is required (e.g. in `Binary::vector_bytes`, triggered by `bytes32 x = ""` and dynamic return types). This is an internal compiler error.
 
@@ -179,6 +182,7 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
+- `abiEncoderV1/memory_params_in_external_function.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -202324079…
 - `abiEncoderV1/return_dynamic_types_cross_call_simple.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -123001739…
 - `abiEncoderV2/calldata_array_dynamic.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2076556223…
 - `abiEncoderV2/calldata_array_dynamic_index_access.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2076556223…
@@ -189,11 +193,17 @@ A file with more than one kind of failure is counted in each of its categories.
 - `abiEncoderV2/calldata_array_two_dynamic.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -800344695…
 - `abiEncoderV2/calldata_array_two_static.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 519426714"…
 - `abiEncoderV2/calldata_struct_dynamic.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1501966044…
+- `abiEncoderV2/calldata_struct_member_offset.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -176831896…
 - `abiEncoderV2/calldata_struct_simple.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1069563627…
+- `abiEncoderV2/dynamic_nested_arrays.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -201865923…
+- `abiEncoderV2/memory_params_in_external_function.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -202324079…
 - `array/evm_exceptions_out_of_band_access.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 981279420"…
 - `array/memory.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1852907602…
 - `calldata/calldata_bytes_external.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 794233379"…
 - `calldata/calldata_internal_library.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -732474120…
+- `calldata/calldata_internal_multi_array.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1175536857…
+- `calldata/calldata_internal_multi_fixed_array.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -415682638…
+- `calldata/calldata_memory_mixed.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1670957066…
 - `functionCall/external_call.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -467655094…
 - `functionCall/external_call_dynamic_returndata.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2137741580…
 - `inheritance/inherited_function_calldata_memory.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 2076556223…
@@ -204,13 +214,16 @@ A file with more than one kind of failure is counted in each of its categories.
 - `types/mapping_enum_key_getter_v2.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 1724265095…
 - `using/library_on_interface.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 638722032"…
 - `various/literal_empty_string.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -109677199…
+- `various/skip_dynamic_types.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 638722032"…
+- `various/tuples.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i32 -119473269…
+- `viaYul/local_tuple_assignment.sol` — compiler crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, is_const: true, is_null: false, is_undef: false, llvm_value: "i256 1", llvm_…
 
 </details>
 
 <a id="llvm-assert-call"></a>
 ### LLVM assertion: call with the wrong argument types
 
-**Category:** bug · **Files:** 22 · **Rule:** `llvm-assert-call`
+**Category:** bug · **Files:** 23 · **Rule:** `llvm-assert-call`
 
 **What it means.** Solang emits an LLVM call whose arguments do not match the called function's signature; LLVM aborts (SIGABRT). This is an internal compiler error.
 
@@ -226,6 +239,7 @@ A file with more than one kind of failure is counted in each of its categories.
 - `functionCall/call_attached_library_function_on_function.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
 - `functionCall/call_internal_function_via_expression.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
 - `functionCall/member_accessors.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:636: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
+- `functionSelector/function_selector_via_contract_name.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
 - `functionTypes/function_type_library_internal.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
 - `functionTypes/pass_function_types_internally.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
 - `inheritance/dataLocation/external_public_calldata.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Instructions.cpp:631: void llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::Ope…
@@ -245,6 +259,44 @@ A file with more than one kind of failure is counted in each of its categories.
 
 </details>
 
+<a id="panic-unsupported-builtin"></a>
+### Unsupported builtin crashes Soroban codegen
+
+**Category:** bug · **Files:** 22 · **Rule:** `panic-unsupported-builtin`
+
+**What it means.** The test uses a builtin (or storage operation) that Solang does not implement for Soroban. Instead of a compile error, the compiler panics in `emit/soroban/target.rs`.
+
+**Suggested fix.** Reject the builtin during semantic analysis for the Soroban target.
+
+**Docs.** docs/targets/soroban_language_compatibility.rst, intro (reject rather than miscompile).
+
+<details><summary>Files</summary>
+
+- `abiEncoderV2/calldata_array.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `abiEncoderV2/calldata_array_dynamic_static_dynamic.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/bytes_length_member.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/copying/array_of_structs_containing_arrays_memory_to_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): storage subscript is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/copying/bytes_inside_mappings.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/copying/copy_removes_bytes_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/delete/delete_removes_bytes_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `events/event_constructor.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `events/event_emit_via_interface.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `events/event_really_lots_of_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `isoltestTesting/account.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `libraries/internal_types_in_library.sol` — compiler crashed: solang panicked mid-compile (ICE): storage subscript is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `libraries/library_call_in_homestead.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `libraries/using_library_mappings_return.sol` — compiler crashed: solang panicked mid-compile (ICE): storage subscript is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `libraries/using_library_structs.sol` — compiler crashed: solang panicked mid-compile (ICE): storage subscript is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `state/msg_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `state/msg_sender.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `structs/copy_from_mapping.sol` — compiler crashed: solang panicked mid-compile (ICE): storage subscript is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `structs/msg_data_to_struct_member_copy.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `various/create_calldata.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `various/erc20.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `various/store_bytes.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+
+</details>
+
 <a id="modifier-dispatch"></a>
 ### Function modifiers crash Soroban dispatch
 
@@ -258,58 +310,52 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
-- `arithmetics/checked_modifier_called_by_unchecked.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/break_in_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/continue_in_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_empty.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_local_variables.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_loop.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_loop_viair.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_multi_invocation.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_multi_invocation_viair.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_multi_with_return.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_multiple_times.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_multiple_times_local_vars.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/function_modifier_overriding.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/modifer_recursive.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/modifier_init_return.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/return_does_not_skip_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/return_in_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `modifiers/stacked_return_with_modifiers.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
-- `various/multi_modifiers.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:38:26)
+- `arithmetics/checked_modifier_called_by_unchecked.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/break_in_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/continue_in_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_empty.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_local_variables.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_loop.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_loop_viair.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_multi_invocation.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_multi_invocation_viair.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_multi_with_return.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_multiple_times.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_multiple_times_local_vars.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/function_modifier_overriding.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/modifer_recursive.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/modifier_init_return.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/return_does_not_skip_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/return_in_modifier.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `modifiers/stacked_return_with_modifiers.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
+- `various/multi_modifiers.sol` — compiler crashed: solang panicked mid-compile (ICE): internal error: entered unreachable code (at solang/src/codegen/targets/soroban/dispatch.rs:41:26)
 
 </details>
 
-<a id="panic-unsupported-builtin"></a>
-### Unsupported builtin crashes Soroban codegen
+<a id="crash-other"></a>
+### Other compiler crashes
 
-**Category:** bug · **Files:** 17 · **Rule:** `panic-unsupported-builtin`
+**Category:** bug · **Files:** 11 · **Rule:** `crash-other`
 
-**What it means.** The test uses a builtin (or storage operation) that Solang does not implement for Soroban. Instead of a compile error, the compiler panics in `emit/soroban/target.rs`.
+**What it means.** Solang crashed (panic, out-of-bounds index, `unwrap` on `None`, …) instead of compiling or rejecting the test. A compiler must never crash on any input.
 
-**Suggested fix.** Reject the builtin during semantic analysis for the Soroban target.
+**Suggested fix.** Minimise each and file individually.
 
-**Docs.** docs/targets/soroban_language_compatibility.rst, intro (reject rather than miscompile).
+**Docs.** Internal error.
 
 <details><summary>Files</summary>
 
-- `abiEncoderV2/calldata_array.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `abiEncoderV2/calldata_array_dynamic_static_dynamic.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `array/bytes_length_member.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `array/copying/bytes_inside_mappings.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `array/copying/copy_removes_bytes_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `array/delete/delete_removes_bytes_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `events/event_constructor.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `events/event_emit_via_interface.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `events/event_really_lots_of_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `isoltestTesting/account.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `libraries/library_call_in_homestead.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `state/msg_data.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `state/msg_sender.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `structs/copy_from_mapping.sol` — compiler crashed: solang panicked mid-compile (ICE): storage subscript is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `various/create_calldata.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `various/erc20.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
-- `various/store_bytes.sol` — compiler crashed: solang panicked mid-compile (ICE): this Soroban builtin is not supported for target soroban (at solang/src/emit/soroban/target.rs:27:5)
+- `array/copying/nested_array_element_calldata_to_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): not an array (at solang/src/sema/types.rs:1441:18)
+- `array/copying/nested_array_element_memory_to_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): not an array (at solang/src/sema/types.rs:1441:18)
+- `array/fixed_arrays_in_storage.sol` — compiler crashed: killed by signal 9
+- `constructor/functions_called_by_constructor_through_dispatch.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/emit/instructions.rs:747:18)
+- `functionCall/call_function_returning_nothing_via_pointer.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/emit/instructions.rs:747:18)
+- `functionCall/inheritance/call_unimplemented_base.sol` — compiler crashed: solang panicked mid-compile (ICE): index out of bounds: the len is 0 but the index is 0 (at solang/src/emit/cfg.rs:231:29)
+- `functionCall/send_zero_ether.sol` — compiler crashed: solang panicked mid-compile (ICE): Builtin should not be in the cfg (at solang/src/codegen/mod.rs:2011:18)
+- `metaTypes/name_other_contract.sol` — compiler crashed: solang panicked mid-compile (ICE): index out of bounds: the len is 0 but the index is 0 (at solang/src/emit/instructions.rs:596:36)
+- `modifiers/function_modifier_library_inheritance.sol` — compiler crashed: solang panicked mid-compile (ICE): index out of bounds: the len is 0 but the index is 0 (at solang/src/emit/cfg.rs:231:29)
+- `storage/mappings_array2d_pop_delete.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/codegen/targets/soroban/arrays.rs:56:29)
+- `storage/mappings_array_pop_delete.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/codegen/targets/soroban/arrays.rs:56:29)
 
 </details>
 
@@ -339,29 +385,26 @@ A file with more than one kind of failure is counted in each of its categories.
 
 </details>
 
-<a id="crash-other"></a>
-### Other compiler crashes
+<a id="llvm-assert-other"></a>
+### Other LLVM assertion failures
 
-**Category:** bug · **Files:** 10 · **Rule:** `crash-other`
+**Category:** bug · **Files:** 7 · **Rule:** `llvm-assert-other`
 
-**What it means.** Solang crashed (panic, out-of-bounds index, `unwrap` on `None`, …) instead of compiling or rejecting the test. A compiler must never crash on any input.
+**What it means.** LLVM aborts on invalid IR produced by Solang (type mismatch in replace-all-uses, inliner assertion, …). Internal compiler error.
 
-**Suggested fix.** Minimise each and file individually.
+**Suggested fix.** Minimise and file individually.
 
 **Docs.** Internal error.
 
 <details><summary>Files</summary>
 
-- `array/copying/nested_array_element_calldata_to_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): not an array (at solang/src/sema/types.rs:1441:18)
-- `array/copying/nested_array_element_memory_to_storage.sol` — compiler crashed: solang panicked mid-compile (ICE): not an array (at solang/src/sema/types.rs:1441:18)
-- `constructor/functions_called_by_constructor_through_dispatch.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/emit/instructions.rs:720:18)
-- `functionCall/call_function_returning_nothing_via_pointer.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/emit/instructions.rs:720:18)
-- `functionCall/inheritance/call_unimplemented_base.sol` — compiler crashed: solang panicked mid-compile (ICE): index out of bounds: the len is 0 but the index is 0 (at solang/src/emit/cfg.rs:231:29)
-- `functionCall/send_zero_ether.sol` — compiler crashed: solang panicked mid-compile (ICE): Builtin should not be in the cfg (at solang/src/codegen/mod.rs:2003:18)
-- `metaTypes/name_other_contract.sol` — compiler crashed: solang panicked mid-compile (ICE): index out of bounds: the len is 0 but the index is 0 (at solang/src/emit/instructions.rs:569:36)
-- `modifiers/function_modifier_library_inheritance.sol` — compiler crashed: solang panicked mid-compile (ICE): index out of bounds: the len is 0 but the index is 0 (at solang/src/emit/cfg.rs:231:29)
-- `storage/mappings_array2d_pop_delete.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/codegen/targets/soroban/arrays.rs:56:29)
-- `storage/mappings_array_pop_delete.sol` — compiler crashed: solang panicked mid-compile (ICE): called `Option::unwrap()` on a `None` value (at solang/src/codegen/targets/soroban/arrays.rs:56:29)
+- `arithmetics/addmod_mulmod.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm::InlineFunction(llvm::CallBase&, llvm::InlineFunctionInfo&, bool, llvm::AA…
+- `arithmetics/addmod_mulmod_zero.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm::InlineFunction(llvm::CallBase&, llvm::InlineFunctionInfo&, bool, llvm::AA…
+- `array/delete/memory_arrays_delete.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<nu…
+- `events/event_selector.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Type.cpp:314: static llvm::IntegerType* llvm::IntegerType::get(llvm::LLVMContext&, unsigned int): Assertion `NumBits >= MIN_INT_BITS && "…
+- `events/event_selector_file_level.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Type.cpp:314: static llvm::IntegerType* llvm::IntegerType::get(llvm::LLVMContext&, unsigned int): Assertion `NumBits >= MIN_INT_BITS && "…
+- `functionTypes/function_delete_stack.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<nu…
+- `variables/delete_local.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<nu…
 
 </details>
 
@@ -384,27 +427,6 @@ A file with more than one kind of failure is counted in each of its categories.
 - `structs/recursive_structs.sol` — compiler crashed: killed by signal 6: thread 'main' has overflowed its stack
 - `structs/struct_reference.sol` — compiler crashed: killed by signal 6: thread 'main' has overflowed its stack
 - `structs/structs.sol` — compiler crashed: killed by signal 6: thread 'main' has overflowed its stack
-
-</details>
-
-<a id="llvm-assert-other"></a>
-### Other LLVM assertion failures
-
-**Category:** bug · **Files:** 5 · **Rule:** `llvm-assert-other`
-
-**What it means.** LLVM aborts on invalid IR produced by Solang (type mismatch in replace-all-uses, inliner assertion, …). Internal compiler error.
-
-**Suggested fix.** Minimise and file individually.
-
-**Docs.** Internal error.
-
-<details><summary>Files</summary>
-
-- `arithmetics/addmod_mulmod.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm::InlineFunction(llvm::CallBase&, llvm::InlineFunctionInfo&, bool, llvm::AA…
-- `arithmetics/addmod_mulmod_zero.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/Transforms/Utils/InlineFunction.cpp:2823: llvm::InlineResult llvm::InlineFunction(llvm::CallBase&, llvm::InlineFunctionInfo&, bool, llvm::AA…
-- `array/delete/memory_arrays_delete.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<nu…
-- `functionTypes/function_delete_stack.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<nu…
-- `variables/delete_local.sol` — compiler crashed: killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::ReplaceMetadataUses): Assertion `New && "Value::replaceAllUsesWith(<nu…
 
 </details>
 
@@ -462,52 +484,16 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
-- `array/calldata_array_two_dimensional.sol` — compiler crashed: solang panicked mid-compile (ICE): function name "test_uint256ArrayArray2_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:401:41)
-- `array/calldata_array_two_dimensional_1.sol` — compiler crashed: solang panicked mid-compile (ICE): function name "test_uint256ArrayArray_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:401:41)
-- `calldata/calldata_array_access.sol` — compiler crashed: solang panicked mid-compile (ICE): function name "f_uint256ArrayArray_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:401:41)
-
-</details>
-
-<a id="timeout"></a>
-### Timed out (over 10 s)
-
-**Category:** review · **Files:** 22 · **Rule:** `timeout`
-
-**What it means.** Compiling or running the test took longer than 10 seconds. It may be a compiler hang or simply a slow test.
-
-**Suggested fix.** Re-run alone with a longer timeout to tell a hang from slowness.
-
-<details><summary>Files</summary>
-
-- `abiEncoderV2/calldata_dynamic_array_to_memory.sol` — timed out: exceeded 10s
-- `abiEncoderV2/calldata_three_dimensional_dynamic_array_index_access.sol` — timed out: exceeded 10s
-- `array/array_storage_length_access.sol` — timed out: exceeded 10s
-- `array/array_storage_push_empty.sol` — timed out: exceeded 10s
-- `array/array_storage_push_pop.sol` — timed out: exceeded 10s
-- `array/copying/array_copy_storage_to_memory_nested.sol` — timed out: exceeded 10s
-- `array/copying/array_elements_to_mapping.sol` — timed out: exceeded 10s
-- `array/copying/array_nested_storage_to_memory.sol` — timed out: exceeded 10s
-- `array/copying/array_to_mapping.sol` — timed out: exceeded 10s
-- `array/copying/elements_of_nested_array_of_structs_calldata_to_storage.sol` — timed out: exceeded 10s
-- `array/copying/elements_of_nested_array_of_structs_memory_to_storage.sol` — timed out: exceeded 10s
-- `array/copying/nested_array_element_storage_to_memory.sol` — timed out: exceeded 10s
-- `array/copying/nested_array_of_structs_calldata_to_storage.sol` — timed out: exceeded 10s
-- `array/copying/nested_array_of_structs_memory_to_storage.sol` — timed out: exceeded 10s
-- `array/copying/nested_array_of_structs_with_nested_array_from_storage_to_memory.sol` — timed out: exceeded 10s
-- `array/fixed_arrays_in_storage.sol` — timed out: exceeded 10s
-- `events/event_dynamic_nested_array_storage_v2.sol` — timed out: exceeded 10s
-- `literals/denominations_in_array_sizes.sol` — timed out: exceeded 10s
-- `structs/copy_struct_array_from_storage.sol` — timed out: exceeded 10s
-- `structs/copy_substructures_from_mapping.sol` — timed out: exceeded 10s
-- `structs/copy_substructures_to_mapping.sol` — timed out: exceeded 10s
-- `structs/copy_to_mapping.sol` — timed out: exceeded 10s
+- `array/calldata_array_two_dimensional.sol` — compiler crashed: solang panicked mid-compile (ICE): function name "test_uint256ArrayArray2_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:441:41)
+- `array/calldata_array_two_dimensional_1.sol` — compiler crashed: solang panicked mid-compile (ICE): function name "test_uint256ArrayArray_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:441:41)
+- `calldata/calldata_array_access.sol` — compiler crashed: solang panicked mid-compile (ICE): function name "f_uint256ArrayArray_uint256_uint256" exceeds limit (at solang/src/emit/soroban/mod.rs:441:41)
 
 </details>
 
 <a id="int-width-probable"></a>
 ### Probably caused by integer rounding (needs confirmation)
 
-**Category:** review · **Files:** 18 · **Rule:** `int-width-probable`
+**Category:** review · **Files:** 26 · **Rule:** `int-width-probable`
 
 **What it means.** The test declares small integer types that Solang rounds up on Soroban, which is the likely cause. The failing call's own parameters are not small integers, so the link is not certain.
 
@@ -517,24 +503,58 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
+- `abiencodedecode/abi_encode_with_signaturev2.sol` — failed at runtime `f0()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f0, Error(Value, InvalidInput)
+- `array/copying/array_storage_multi_items_per_slot.sol` — failed at runtime `f()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
 - `array/push/array_push_nested_from_memory.sol` — failed at runtime `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `cleanup/cleanup_in_compound_assign.sol` — wrong value `test()`: expected [Int(255), Int(255)], got [Int(16777215), Int(16777215)]
 - `cleanup/exp_cleanup.sol` — wrong value `f()`: expected [Int(1)], got Int(0)
 - `cleanup/exp_cleanup_direct.sol` — wrong value `f()`: expected [Int(1)], got Int(0)
+- `enums/enum_with_256_members.sol` — wrong value `decodeEnum(bytes)`: expected [Int(255)], got Int(0)
 - `integer/uint.sol` — failed at runtime `uintMaxA()`: Error(Context, InvalidAction); log: runtime_error: require condition failed in test.sol:122:3-10
 - `literals/ternary_operator_with_literal_types_overflow.sol` — should have reverted `g()`: returned Int(318) instead of reverting
 - `operators/shifts/shift_cleanup.sol` — wrong value `f()`: expected [Int(0)], got Int(256)
 - `operators/shifts/shift_cleanup_garbled.sol` — wrong value `f()`: expected [Int(0)], got Int(255)
 - `revertStrings/calldata_too_short_v1.sol` — should have reverted `d(bytes)`: returned Int(0) instead of reverting
+- `storage/packed_storage_signed.sol` — wrong value `test()`: expected [Int(115792089237316195423570985008687907853269984665640564039457584007913129639934), Int(4), Int(11579208923731619542357098500868790785326998466564056…
 - `structs/struct_delete_storage.sol` — failed at runtime `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
 - `types/convert_fixed_bytes_to_uint_smaller_size.sol` — wrong value `bytesToUint(bytes4)`: expected [Int(25444)], got Int(1633837924)
 - `types/mapping/copy_struct_to_array_stored_in_mapping.sol` — failed at runtime `from_storage_to_static_array()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
 - `types/packing_signed_types.sol` — wrong value `run()`: expected [Int(115792089237316195423570985008687907853269984665640564039457584007913129639930)], got Int(250)
+- `userDefinedValueType/storage_layout.sol` — wrong value `storage_b()`: expected [Int(0), Int(1)], got [Int(1), Int(0)]
 - `viaYul/cleanup/comparison.sol` — wrong value `eq()`: expected [Bool(true)], got Bool(false)
 - `viaYul/conversion/explicit_cast_local_assignment.sol` — wrong value `f(uint256)`: expected [Int(120)], got Int(305419896)
 - `viaYul/conversion/implicit_cast_assignment.sol` — wrong value `f()`: expected [Int(120)], got Int(305419896)
 - `viaYul/conversion/implicit_cast_function_call.sol` — wrong value `g()`: expected [Int(120)], got Int(305419896)
 - `viaYul/conversion/implicit_cast_local_assignment.sol` — wrong value `f()`: expected [Int(120)], got Int(305419896)
 - `viaYul/return_and_convert.sol` — wrong value `f()`: expected [Int(255)], got Int(65535)
+- `viaYul/storage/mappings.sol` — wrong value `test_cleanup()`: expected [Bool(true)], got Bool(false)
+- `viaYul/unary_operations.sol` — wrong value `bitnot_s8()`: expected [Int(99)], got Int(115792089237316195423570985008687907853269984665640564039457584007913129639779)
+
+</details>
+
+<a id="timeout"></a>
+### Timed out (over 10 s)
+
+**Category:** review · **Files:** 12 · **Rule:** `timeout`
+
+**What it means.** Compiling or running the test took longer than 10 seconds. It may be a compiler hang or simply a slow test.
+
+**Suggested fix.** Re-run alone with a longer timeout to tell a hang from slowness.
+
+<details><summary>Files</summary>
+
+- `abiEncoderV2/calldata_three_dimensional_dynamic_array_index_access.sol` — timed out: exceeded 10s
+- `array/array_storage_length_access.sol` — timed out: exceeded 10s
+- `array/array_storage_push_empty.sol` — timed out: exceeded 10s
+- `array/array_storage_push_pop.sol` — timed out: exceeded 10s
+- `array/copying/array_elements_to_mapping.sol` — timed out: exceeded 10s
+- `array/copying/array_nested_storage_to_memory.sol` — timed out: exceeded 10s
+- `array/copying/array_to_mapping.sol` — timed out: exceeded 10s
+- `array/copying/nested_array_element_storage_to_memory.sol` — timed out: exceeded 10s
+- `array/copying/nested_array_of_structs_with_nested_array_from_storage_to_memory.sol` — timed out: exceeded 10s
+- `events/event_dynamic_nested_array_storage_v2.sol` — timed out: exceeded 10s
+- `literals/denominations_in_array_sizes.sol` — timed out: exceeded 10s
+- `structs/copy_substructures_to_mapping.sol` — timed out: exceeded 10s
 
 </details>
 
@@ -566,7 +586,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="enum-range-not-checked"></a>
 ### Out-of-range enum values are accepted
 
-**Category:** review · **Files:** 8 · **Rule:** `enum-range-not-checked`
+**Category:** review · **Files:** 9 · **Rule:** `enum-range-not-checked`
 
 **What it means.** The test passes a number that is not a valid value of the enum (e.g. 5 for an enum with 3 members) and expects the call to revert, as Solidity does. On Soroban the call succeeds. Solang's docs list enums as supported, so accepting invalid values is a strong bug candidate. It could also be a consequence of enums crossing the Soroban boundary as plain integers.
 
@@ -577,6 +597,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <details><summary>Files</summary>
 
 - `abiEncoderV2/enums.sol` — should have reverted `f(uint8)`: returned Int(2) instead of reverting
+- `enums/enum_with_256_members.sol` — should have reverted `enumToInt(uint8)`: returned Int(0) instead of reverting
 - `revertStrings/enum_v1.sol` — should have reverted `f(uint8[])`: returned (void) instead of reverting
 - `revertStrings/enum_v2.sol` — should have reverted `f(uint8[])`: returned (void) instead of reverting
 - `types/mapping_enum_key_library_v1.sol` — should have reverted `get(uint8)`: returned Int(0) instead of reverting
@@ -590,7 +611,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="deployment-failed"></a>
 ### Contract fails while being deployed
 
-**Category:** review · **Files:** 3 · **Rule:** `deployment-failed`
+**Category:** review · **Files:** 8 · **Rule:** `deployment-failed`
 
 **What it means.** The contract's constructor (or state initialisation) fails on the Soroban host, so no call can run. On the EVM the same contract deploys normally. Likely a Solang bug in constructor or initializer code.
 
@@ -600,9 +621,14 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
+- `array/copying/array_of_struct_calldata_to_storage.sol` — failed at runtime `f((uint128,uint64,uint128)[])`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
+- `array/copying/array_of_struct_memory_to_storage.sol` — failed at runtime `f()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
 - `array/dynamic_array_cleanup.sol` — failed at runtime `fill()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
 - `storage/accessors_mapping_for_array.sol` — failed at runtime `data(uint256,uint256)`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
+- `structs/calldata/calldata_struct_to_storage.sol` — failed at runtime `f(uint32,(uint256,uint64,bytes2),uint256)`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
 - `structs/struct_copy_via_local.sol` — failed at runtime `test()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
+- `structs/struct_memory_to_storage.sol` — failed at runtime `f()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
+- `structs/struct_storage_to_memory.sol` — failed at runtime `f()`: contract deployment failed: called `Result::unwrap()` on an `Err` value: HostError: Error(Context, InvalidAction)
 
 </details>
 
@@ -624,7 +650,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="soroban-only-rejection"></a>
 ### Rejected on Soroban only (not yet explained)
 
-**Category:** soroban-gap · **Files:** 5 · **Rule:** `soroban-only-rejection`
+**Category:** soroban-gap · **Files:** 7 · **Rule:** `soroban-only-rejection`
 
 **What it means.** Solang rejects this test for Soroban, but accepts the same code for its Polkadot target, so the limitation is specific to the Soroban backend. No dictionary rule explains it yet.
 
@@ -635,6 +661,8 @@ A file with more than one kind of failure is counted in each of its categories.
 <details><summary>Files</summary>
 
 - `arithmetics/signed_mod.sol` — rejected: value 57896044618658097711785492504343953926634992332820282019728792003956564819968 does not fit into type int256.; value 5789604461865809771178549250434395392663499233282028201972…
+- `array/copying/copy_byte_array_in_struct_to_storage.sol` — rejected: Variable 'x' is undefined
+- `calldata/copy_from_calldata_removes_bytes_data.sol` — rejected: Variable 'emptyData' is undefined
 - `operators/shifts/shift_left_larger_type.sol` — rejected: left shift by 254 is not possible
 - `structs/struct_referencing.sol` — rejected: Variable 's' is undefined; Variable 's' is undefined
 - `viaYul/local_variable_without_init.sol` — rejected: Variable 'x' is undefined
@@ -832,227 +860,10 @@ A file with more than one kind of failure is counted in each of its categories.
 
 </details>
 
-<a id="multi-return"></a>
-### Multiple return values from public functions
-
-**Category:** documented-unsupported · **Files:** 201 · **Rule:** `multi-return`
-
-**What it means.** Solidity functions can return several values at once (`returns (uint, bool)`). On Soroban a contract function returns a single value, and Solang's docs state that external functions return at most one value. The same code compiles for Solang's other targets. This is the single largest reason tests are rejected.
-
-**Suggested fix.** Return the values packed into one Soroban value (a `Vec` or struct-like `Map`) and unpack them on the calling side.
-
-**Docs.** docs/targets/soroban_support_matrix.rst, 'Contract model': external functions return at most one value (documented since v0.4.0).
-
-<details><summary>Files</summary>
-
-- `abiEncoderV1/abi_decode_fixed_arrays.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV1/abi_encode_decode_simple.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV1/byte_arrays.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV1/calldata_bytes_bytes32_arrays.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV1/dynamic_arrays.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV1/memory_params_in_external_function.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV1/struct/struct_storage_ptr.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/abi_encode_empty_string_v2.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/abi_encode_v2_in_modifier_used_in_v1_contract.sol` — rejected: Soroban external functions can return at most one value; contract construction is not supported for target soroban
-- `abiEncoderV2/abi_encoder_v2_head_overflow_with_static_array_cleanup_bug.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/byte_arrays.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV2/calldata_array_dynamic_static_in_library.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/calldata_overlapped_dynamic_arrays.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/calldata_struct_member_offset.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/calldata_with_garbage.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV2/dynamic_arrays.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/dynamic_nested_arrays.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV2/memory_dynamic_array_and_calldata_static_array.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/memory_params_in_external_function.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `abiEncoderV2/struct/mediocre2_struct.sol` — rejected: Soroban external functions can return at most one value
-- `abiEncoderV2/struct/mediocre_struct.sol` — rejected: Soroban external functions can return at most one value
-- `abiencodedecode/abi_decode_calldata.sol` — rejected: Soroban external functions can return at most one value
-- `abiencodedecode/abi_decode_simple.sol` — rejected: Soroban external functions can return at most one value
-- `abiencodedecode/abi_decode_simple_storage.sol` — rejected: Soroban external functions can return at most one value
-- `abiencodedecode/abi_encode_empty_string_v1.sol` — rejected: Soroban external functions can return at most one value
-- `abiencodedecode/abi_encode_with_signature.sol` — rejected: Soroban external functions can return at most one value
-- `abiencodedecode/abi_encode_with_signaturev2.sol` — rejected: Soroban external functions can return at most one value
-- `array/array_memory_allocation/array_static_return_param_zeroed_memory_index_access.sol` — rejected: Soroban external functions can return at most one value
-- `array/calldata_array.sol` — rejected: Soroban external functions can return at most one value
-- `array/calldata_array_of_struct.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_copy_including_array.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_copy_storage_storage_dyn_dyn.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_copy_storage_storage_dynamic_dynamic.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_copy_storage_storage_struct.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_copy_storage_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_nested_calldata_to_memory.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `array/copying/array_nested_calldata_to_storage.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `array/copying/array_of_struct_calldata_to_memory.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `array/copying/array_of_struct_calldata_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_of_struct_memory_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_of_structs_containing_arrays_calldata_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_of_structs_containing_arrays_calldata_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_of_structs_containing_arrays_memory_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/array_storage_multi_items_per_slot.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/calldata_array_of_struct_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/calldata_array_static_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/calldata_bytes_array_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/calldata_dynamic_array_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/copy_byte_array_in_struct_to_storage.sol` — rejected: Variable 'x' is undefined; Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return a…
-- `array/copying/storage_memory_nested.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/storage_memory_nested_from_pointer.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/storage_memory_nested_struct.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/storage_memory_packed.sol` — rejected: Soroban external functions can return at most one value
-- `array/copying/storage_memory_packed_dyn.sol` — rejected: Soroban external functions can return at most one value
-- `array/create_memory_array.sol` — rejected: Soroban external functions can return at most one value
-- `array/dynamic_arrays_in_storage.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `array/external_array_args.sol` — rejected: Soroban external functions can return at most one value
-- `array/fixed_arrays_as_return_type.sol` — rejected: Soroban external functions can return at most one value; contract construction is not supported for target soroban
-- `array/fixed_bytes_length_access.sol` — rejected: Soroban external functions can return at most one value
-- `array/indexAccess/arrays_complex_memory_index_access.sol` — rejected: Soroban external functions can return at most one value
-- `array/indexAccess/bytes_index_access_memory.sol` — rejected: Soroban external functions can return at most one value
-- `array/indexAccess/bytes_memory_index_access.sol` — rejected: Soroban external functions can return at most one value
-- `array/inline_array_storage_to_memory_conversion_ints.sol` — rejected: Soroban external functions can return at most one value
-- `array/inline_array_storage_to_memory_conversion_strings.sol` — rejected: Soroban external functions can return at most one value
-- `array/pop/array_pop.sol` — rejected: Soroban external functions can return at most one value
-- `array/pop/array_pop_array_transition.sol` — rejected: Soroban external functions can return at most one value
-- `array/pop/array_pop_uint16_transition.sol` — rejected: Soroban external functions can return at most one value
-- `array/pop/array_pop_uint24_transition.sol` — rejected: Soroban external functions can return at most one value
-- `array/pop/byte_array_pop.sol` — rejected: Soroban external functions can return at most one value
-- `array/push/array_push.sol` — rejected: Soroban external functions can return at most one value
-- `array/push/array_push_packed_array.sol` — rejected: Soroban external functions can return at most one value
-- `array/push/array_push_struct.sol` — rejected: Soroban external functions can return at most one value
-- `array/push/array_push_struct_from_calldata.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_array_dynamic_bytes.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `calldata/calldata_array_length.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_array_three_dimensional.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_attached_to_bytes.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_attached_to_static_array.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_attached_to_struct.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_internal_multi_array.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `calldata/calldata_internal_multi_fixed_array.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `calldata/calldata_memory_mixed.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `calldata/calldata_string_array.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_struct.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/calldata_struct_internal.sol` — rejected: Soroban external functions can return at most one value
-- `calldata/copy_from_calldata_removes_bytes_data.sol` — rejected: Variable 'emptyData' is undefined; Soroban external functions can return at most one value
-- `cleanup/cleanup_in_compound_assign.sol` — rejected: Soroban external functions can return at most one value
-- `constantEvaluator/rounding.sol` — rejected: Soroban external functions can return at most one value
-- `constants/constant_string_at_file_level.sol` — rejected: Soroban external functions can return at most one value
-- `constants/consteval_array_length.sol` — rejected: Soroban external functions can return at most one value
-- `constructor/arrays_in_constructors.sol` — rejected: Soroban external functions can return at most one value; contract construction is not supported for target soroban
-- `constructor/bytes_in_constructors_packer.sol` — rejected: Soroban external functions can return at most one value; contract construction is not supported for target soroban
-- `enums/enum_with_256_members.sol` — rejected: Soroban external functions can return at most one value
-- `events/event_selector.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `events/event_selector_file_level.sol` — rejected: Soroban external functions can return at most one value
-- `expressions/conditional_expression_tuples.sol` — rejected: Soroban external functions can return at most one value
-- `expressions/conditional_expression_with_return_values.sol` — rejected: Soroban external functions can return at most one value
-- `freeFunctions/import.sol` — rejected: Soroban external functions can return at most one value
-- `freeFunctions/libraries_from_free.sol` — rejected: Soroban external functions can return at most one value
-- `freeFunctions/overloads.sol` — rejected: Soroban external functions can return at most one value
-- `freeFunctions/storage_calldata_refs.sol` — rejected: Soroban external functions can return at most one value
-- `functionCall/external_function.sol` — rejected: Soroban external functions can return at most one value
-- `functionCall/file_level_call_via_module.sol` — rejected: Soroban external functions can return at most one value
-- `functionCall/mapping_array_internal_argument.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `functionCall/mapping_internal_argument.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `functionCall/mapping_internal_return.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `functionCall/multiple_return_values.sol` — rejected: Soroban external functions can return at most one value
-- `functionSelector/function_selector_via_contract_name.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `functionTypes/address_member.sol` — rejected: Soroban external functions can return at most one value
-- `functionTypes/selector_1.sol` — rejected: Soroban external functions can return at most one value
-- `functionTypes/selector_2.sol` — rejected: Soroban external functions can return at most one value
-- `immutable/increment_decrement.sol` — rejected: Soroban external functions can return at most one value
-- `immutable/inheritance.sol` — rejected: Soroban external functions can return at most one value
-- `immutable/multi_creation.sol` — rejected: Soroban external functions can return at most one value; contract construction is not supported for target soroban; contract construction is not supported for target soroban; contr…
-- `immutable/stub.sol` — rejected: Soroban external functions can return at most one value
-- `immutable/uninitialized.sol` — rejected: Soroban external functions can return at most one value
-- `immutable/use_scratch.sol` — rejected: Soroban external functions can return at most one value
-- `inheritance/access_base_storage.sol` — rejected: Soroban external functions can return at most one value
-- `interface_inheritance_conversions.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; contract construction is not supported for target soroban; contrac…
-- `libraries/attached_internal_library_function_accepting_calldata.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/attached_internal_library_function_returning_calldata.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/attached_public_library_function_accepting_calldata.sol.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/attached_public_library_function_returning_calldata.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/internal_types_in_library.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/mapping_returns_in_library_named.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `libraries/using_for_storage_structs.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/using_library_mappings_public.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/using_library_mappings_return.sol` — rejected: Soroban external functions can return at most one value
-- `libraries/using_library_structs.sol` — rejected: Soroban external functions can return at most one value
-- `literals/escape.sol` — rejected: Soroban external functions can return at most one value
-- `multiSource/import_overloaded_function.sol` — rejected: Soroban external functions can return at most one value
-- `smoke/alignment.sol` — rejected: Soroban external functions can return at most one value; contract construction is not supported for target soroban
-- `smoke/arrays.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `smoke/bytes_and_strings.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `specialFunctions/keccak256_optimized.sol` — rejected: Soroban external functions can return at most one value
-- `storage/packed_storage_overflow.sol` — rejected: Soroban external functions can return at most one value
-- `storage/packed_storage_signed.sol` — rejected: Soroban external functions can return at most one value
-- `strings/empty_storage_string.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `strings/empty_string_input.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `structs/calldata/calldata_nested_structs.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_and_ints.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_array_member.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_array_member_dynamic.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_as_argument_of_lib_function.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_as_memory_argument.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_struct_member.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_struct_member_dynamic.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_to_memory_tuple_assignment.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_with_array_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_with_bytes_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_with_nested_array_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_struct_with_nested_array_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/calldata_structs.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/dynamic_nested.sol` — rejected: Soroban external functions can return at most one value
-- `structs/calldata/dynamically_encoded.sol` — rejected: Soroban external functions can return at most one value
-- `structs/global.sol` — rejected: Soroban external functions can return at most one value
-- `structs/memory_structs_as_function_args.sol` — rejected: Soroban external functions can return at most one value
-- `structs/memory_structs_nested.sol` — rejected: Soroban external functions can return at most one value
-- `structs/memory_structs_nested_load.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `structs/memory_structs_read_write.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `structs/msg_data_to_struct_member_copy.sol` — rejected: Soroban external functions can return at most one value
-- `structs/struct_assign_reference_to_struct.sol` — rejected: Soroban external functions can return at most one value
-- `structs/struct_constructor_nested.sol` — rejected: Soroban external functions can return at most one value
-- `structs/struct_copy.sol` — rejected: Soroban external functions can return at most one value
-- `structs/struct_memory_to_storage.sol` — rejected: Soroban external functions can return at most one value
-- `structs/struct_storage_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `types/assign_calldata_value_type.sol` — rejected: Soroban external functions can return at most one value
-- `types/strings.sol` — rejected: Soroban external functions can return at most one value
-- `userDefinedValueType/simple.sol` — rejected: Soroban external functions can return at most one value
-- `using/module_renamed.sol` — rejected: Soroban external functions can return at most one value
-- `using/using_global_all_the_types.sol` — rejected: Soroban external functions can return at most one value
-- `using/using_global_library.sol` — rejected: Soroban external functions can return at most one value
-- `variables/delete_locals.sol` — rejected: Soroban external functions can return at most one value
-- `variables/mapping_local_assignment.sol` — rejected: Soroban external functions can return at most one value
-- `variables/mapping_local_compound_assignment.sol` — rejected: Soroban external functions can return at most one value
-- `variables/mapping_local_tuple_assignment.sol` — rejected: Soroban external functions can return at most one value
-- `variables/public_state_overridding_dynamic_struct.sol` — rejected: Soroban external functions can return at most one value
-- `variables/public_state_overridding_mapping_to_dynamic_struct.sol` — rejected: Soroban external functions can return at most one value
-- `various/inline_member_init.sol` — rejected: Soroban external functions can return at most one value
-- `various/multi_variable_declaration.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `various/nested_calldata_struct.sol` — rejected: Soroban external functions can return at most one value
-- `various/nested_calldata_struct_to_memory.sol` — rejected: Soroban external functions can return at most one value
-- `various/skip_dynamic_types.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `various/string_tuples.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `various/tuples.sol` — rejected: Soroban external functions can return at most one value
-- `viaYul/assign_tuple_from_function_call.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `viaYul/comparison_functions.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `viaYul/conditional/conditional_tuple.sol` — rejected: Soroban external functions can return at most one value
-- `viaYul/conditional/conditional_with_assignment.sol` — rejected: Soroban external functions can return at most one value
-- `viaYul/conditional/conditional_with_variables.sol` — rejected: Soroban external functions can return at most one value
-- `viaYul/define_tuple_from_function_call.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `viaYul/if.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `viaYul/local_tuple_assignment.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban e…
-- `viaYul/return_storage_pointers.sol` — rejected: Soroban external functions can return at most one value
-- `viaYul/short_circuit.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value
-- `viaYul/simple_assignment.sol` — rejected: Soroban external functions can return at most one value
-- `viaYul/struct_member_access.sol` — rejected: Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban external functions can return at most one value; Soroban e…
-- `viaYul/tuple_evaluation_order.sol` — rejected: Soroban external functions can return at most one value
-
-</details>
-
 <a id="new-contract"></a>
 ### Creating contracts with `new Contract()`
 
-**Category:** documented-unsupported · **Files:** 17 · **Rule:** `new-contract`
+**Category:** documented-unsupported · **Files:** 24 · **Rule:** `new-contract`
 
 **What it means.** The test deploys another contract with `new C()`. Solang does not support this syntax on Soroban; contracts must be deployed from an uploaded Wasm hash instead.
 
@@ -1062,19 +873,26 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
+- `abiEncoderV2/abi_encode_v2_in_modifier_used_in_v1_contract.sol` — rejected: contract construction is not supported for target soroban
+- `array/fixed_arrays_as_return_type.sol` — rejected: contract construction is not supported for target soroban
 - `array/reusing_memory.sol` — rejected: contract construction is not supported for target soroban
+- `constructor/arrays_in_constructors.sol` — rejected: contract construction is not supported for target soroban
+- `constructor/bytes_in_constructors_packer.sol` — rejected: contract construction is not supported for target soroban
 - `constructor/evm_exceptions_in_constructor_call_fail.sol` — rejected: contract construction is not supported for target soroban
 - `constructor/no_callvalue_check.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban; contract construction is not supported for target soroban
 - `freeFunctions/new_operator.sol` — rejected: contract construction is not supported for target soroban
 - `functionCall/external_call_at_construction_time.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban
 - `functionCall/failed_create.sol` — rejected: contract construction is not supported for target soroban
+- `immutable/multi_creation.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban; contract construction is not supported for target soroban; con…
 - `inheritance/address_overload_resolution.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban
 - `inheritance/inherited_function_calldata_calldata_interface.sol` — rejected: contract construction is not supported for target soroban
 - `inheritance/inherited_function_calldata_memory_interface.sol` — rejected: contract construction is not supported for target soroban
 - `inheritance/member_notation_ctor.sol` — rejected: contract construction is not supported for target soroban
+- `interface_inheritance_conversions.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban; contract construction is not supported for target soroban
 - `libraries/internal_library_function_attached_to_contract.sol` — rejected: contract construction is not supported for target soroban
 - `libraries/internal_library_function_attached_to_interface.sol` — rejected: contract construction is not supported for target soroban
 - `salted_create/prediction_example.sol` — rejected: contract construction is not supported for target soroban
+- `smoke/alignment.sol` — rejected: contract construction is not supported for target soroban
 - `various/contract_binary_dependencies.sol` — rejected: contract construction is not supported for target soroban
 - `various/many_subassemblies.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban; contract construction is not supported for target soroban; con…
 - `various/staticcall_for_view_and_pure.sol` — rejected: contract construction is not supported for target soroban; contract construction is not supported for target soroban; contract construction is not supported for target soroban
@@ -1113,7 +931,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="struct-public-getter"></a>
 ### Public getters for struct state variables
 
-**Category:** documented-unsupported · **Files:** 9 · **Rule:** `struct-public-getter`
+**Category:** documented-unsupported · **Files:** 11 · **Rule:** `struct-public-getter`
 
 **What it means.** A `public` state variable of struct type needs an automatically generated getter that returns the struct. Solang's docs state that structs are not yet supported as public state-variable accessor return values on Soroban (user-written functions returning structs do work).
 
@@ -1130,6 +948,8 @@ A file with more than one kind of failure is counted in each of its categories.
 - `getters/mapping_to_struct.sol` — rejected: type 'struct C.S' is not supported as a Soroban public variable accessor return value
 - `storage/array_accessor.sol` — rejected: type 'struct test.st' is not supported as a Soroban public variable accessor return value
 - `structs/struct_named_constructor.sol` — rejected: type 'struct C.S' is not supported as a Soroban public variable accessor return value
+- `variables/public_state_overridding_dynamic_struct.sol` — rejected: type 'struct S' is not supported as a Soroban public variable accessor return value
+- `variables/public_state_overridding_mapping_to_dynamic_struct.sol` — rejected: type 'struct S' is not supported as a Soroban public variable accessor return value
 - `various/negative_stack_height.sol` — rejected: type 'struct C.Invoice' is not supported as a Soroban public variable accessor return value
 - `various/swap_in_storage_overwrite.sol` — rejected: type 'struct c.S' is not supported as a Soroban public variable accessor return value; type 'struct c.S' is not supported as a Soroban public variable accessor return value
 
@@ -1199,7 +1019,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="int-width-overflow"></a>
 ### Small integer types are computed at a wider width
 
-**Category:** documented-difference · **Files:** 23 · **Rule:** `int-width-overflow`
+**Category:** documented-difference · **Files:** 25 · **Rule:** `int-width-overflow`
 
 **What it means.** On Soroban, Solang rounds integer types up to 32/64/128/256 bits and warns about it. Arithmetic, overflow checks, shifts and truncation therefore follow the wider type: `uint8` 200 + 100 returns 300 instead of reverting. This is documented, but the warning does not mention that overflow protection changes.
 
@@ -1213,6 +1033,7 @@ A file with more than one kind of failure is counted in each of its categories.
 - `arithmetics/checked_add_v2.sol` — should have reverted `f(uint16,uint16)`: returned Int(65536) instead of reverting
 - `arithmetics/checked_called_by_unchecked.sol` — should have reverted `f(uint16,uint16,uint16)`: returned Int(115970) instead of reverting
 - `arithmetics/unchecked_called_by_checked.sol` — wrong value `f(uint16)`: expected [Int(511)], got Int(66047)
+- `calldata/calldata_struct_cleaning.sol` — should have reverted `f((uint8,bytes1))`: returned [Int(4660), Bytes([86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])] instead of reverting
 - `operators/shifts/shift_left_uint8.sol` — wrong value `f(uint8,uint8)`: expected [Int(0)], got Int(26112)
 - `operators/shifts/shift_overflow.sol` — wrong value `leftU(uint8,uint8)`: expected [Int(0)], got Int(65280)
 - `operators/shifts/shift_right_garbled_signed_v1.sol` — wrong value `g(int8,uint8)`: expected [Int(115792089237316195423570985008687907853269984665640564039457584007913129639934)], got Int(30)
@@ -1232,13 +1053,14 @@ A file with more than one kind of failure is counted in each of its categories.
 - `viaYul/detect_sub_overflow_signed.sol` — should have reverted `g(int8,int8)`: returned Int(128) instead of reverting
 - `viaYul/dirty_calldata_struct.sol` — wrong value `f((uint16[]))`: expected [Bool(true)], got Bool(false)
 - `viaYul/exp_overflow.sol` — should have reverted `f(uint8,uint8)`: returned Int(256) instead of reverting
+- `viaYul/unary_operations.sol` — should have reverted `preincr_s8(int8)`: returned [Int(129), Int(129)] instead of reverting
 
 </details>
 
 <a id="abi-encode-handles"></a>
 ### `abi.encode` returns Soroban handles, not ABI bytes
 
-**Category:** documented-difference · **Files:** 7 · **Rule:** `abi-encode-handles`
+**Category:** documented-difference · **Files:** 11 · **Rule:** `abi-encode-handles`
 
 **What it means.** On Soroban, Solang's `abi.encode` produces 8 bytes per value: the value's live host-object handle, not the EVM ABI encoding. Solang documents that these bytes are only valid inside the same invocation. A test that returns or compares the encoded bytes therefore cannot match the EVM result.
 
@@ -1250,11 +1072,15 @@ A file with more than one kind of failure is counted in each of its categories.
 
 - `abiEncoderV1/memory_dynamic_array_and_calldata_bytes.sol` — wrong value `f(uint256[],bytes)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 - `abiEncoderV2/calldata_nested_array_reencode.sol` — wrong value `f(uint256[][])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+- `abiEncoderV2/calldata_overlapped_dynamic_arrays.sol` — wrong value `f_encode(uint256[],uint256[2])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 - `abiEncoderV2/calldata_overlapped_nested_dynamic_arrays.sol` — wrong value `f_encode(uint256[][])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 - `abiEncoderV2/calldata_struct_array_reencode.sol` — wrong value `f((uint256[]))`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+- `abiEncoderV2/calldata_with_garbage.sol` — wrong value `f_encode(uint256[])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 - `abiEncoderV2/memory_dynamic_array_and_calldata_bytes.sol` — wrong value `f(uint256[],bytes)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+- `abiEncoderV2/memory_dynamic_array_and_calldata_static_array.sol` — wrong value `f(uint256[],uint256[1])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 - `abiEncoderV2/storage_array_encoding.sol` — wrong value `h(uint256[2][])`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 - `calldata/calldata_bytes_to_memory_encode.sol` — wrong value `f(bytes)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+- `strings/empty_storage_string.sol` — wrong value `l(string)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
 
 </details>
 
@@ -1282,7 +1108,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="evm-only-also-crashed"></a>
 ### EVM-only test that also crashes the compiler
 
-**Category:** evm-only · **Files:** 155 · **Rule:** `evm-only-also-crashed`
+**Category:** evm-only · **Files:** 157 · **Rule:** `evm-only-also-crashed`
 
 **What it means.** The test uses an EVM-only feature (usually inline assembly), so it is excluded from the pass rate. Solang crashed on it instead of rejecting it cleanly, which is a minor diagnostic bug.
 
@@ -1292,12 +1118,14 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
+- `abiEncoderV1/cleanup/cleanup.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, i…
 - `abiEncoderV1/dynamic_memory_copy.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `abiEncoderV1/return_dynamic_types_cross_call_out_of_range_1.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `abiEncoderV1/return_dynamic_types_cross_call_out_of_range_2.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `abiEncoderV2/cleanup/address.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, i…
 - `abiEncoderV2/cleanup/bool.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, i…
 - `abiEncoderV2/cleanup/bytesx.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, i…
+- `abiEncoderV2/cleanup/cleanup.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, i…
 - `abiEncoderV2/cleanup/dynamic_array.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `abiEncoderV2/cleanup/function.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): not implemented (at solang/src/sema/yul/builtin.rs:25:32)
 - `abiEncoderV2/cleanup/intx.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also crashed: solang panicked mid-compile (ICE): Found IntValue(IntValue { int_value: Value { name: "", address: 0x…, i…
@@ -1453,7 +1281,7 @@ A file with more than one kind of failure is counted in each of its categories.
 <a id="evm-only"></a>
 ### EVM-only feature
 
-**Category:** evm-only · **Files:** 86 · **Rule:** `evm-only`
+**Category:** evm-only · **Files:** 76 · **Rule:** `evm-only`
 
 **What it means.** The test uses a feature that exists only on the EVM (assembly, `selfdestruct`, `ecrecover`, `tx.origin`, `msg.value`, low-level calls, EVM block fields). It is excluded from the pass rate.
 
@@ -1463,14 +1291,11 @@ A file with more than one kind of failure is counted in each of its categories.
 
 <details><summary>Files</summary>
 
-- `abiEncoderV1/cleanup/cleanup.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `abiEncoderV2/cleanup/cleanup.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `abiencodedecode/abi_encode_call_declaration.sol` — excluded: .staticcall: .staticcall — EVM-only construct, no Soroban mapping
 - `arithmetics/check_var_init.sol` — excluded: msg.value: msg.value — offered by solang but no Soroban concept
 - `array/delete/delete_memory_array.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/IR/Value.cpp:502: void llvm::Value::doRAUW(llvm::Value*, llvm::Value::Repl…
 - `builtinFunctions/blockhash.sol` — excluded: blockhash: blockhash — EVM-only builtin, no Soroban primitive
 - `builtinFunctions/blockhash_shadow_resolution.sol` — excluded: blockhash: blockhash — EVM-only builtin, no Soroban primitive
-- `calldata/calldata_struct_cleaning.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `cleanup/cleanup_address_types_shortening.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `cleanup/indexed_log_topic_during_explicit_downcast_during_emissions.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `constants/asm_address_constant_regression.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
@@ -1489,14 +1314,12 @@ A file with more than one kind of failure is counted in each of its categories.
 - `events/event_lots_of_data.sol` — excluded: msg.value: msg.value — offered by solang but no Soroban concept
 - `exponentiation/signed_base.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `exponentiation/small_exp.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/Support/APInt.cpp:2106: void llvm::APInt::fromString(unsigned int, llvm::S…
-- `expressions/bit_operators.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
+- `expressions/bit_operators.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/lib/Support/APInt.cpp:2106: void llvm::APInt::fromString(unsigned int, llvm::S…
 - `externalContracts/FixedFeeRegistrar.sol` — excluded: msg.value: msg.value — offered by solang but no Soroban concept
 - `externalContracts/deposit_contract.sol` — excluded: msg.value: msg.value — offered by solang but no Soroban concept
-- `functionCall/delegatecall_return_value.sol` — excluded: .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
 - `functionCall/precompile_extcodesize_check.sol` — excluded: .staticcall: .staticcall — EVM-only construct, no Soroban mapping
 - `functionCall/value_test.sol` — excluded: msg.value: msg.value — offered by solang but no Soroban concept
 - `inlineAssembly/calldata_array_assign_dynamic.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/calldata_array_read.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_assign.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_assign_from_nowhere.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/calldata_length_read.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
@@ -1507,11 +1330,9 @@ A file with more than one kind of failure is counted in each of its categories.
 - `inlineAssembly/constant_access_referencing.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/inline_assembly_memory_access.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/inline_assembly_storage_access_inside_function.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/inline_assembly_write_to_stack.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/inlineasm_empty_let.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `inlineAssembly/slot_access.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/slot_access_via_mapping_pointer.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `inlineAssembly/truefalse.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
+- `inlineAssembly/slot_access_via_mapping_pointer.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping; also killed by signal 6: sorobench: llvm/include/llvm/IR/Instructions.h:2799: void llvm::PHINode::setIncomingValue(unsi…
 - `libraries/library_address.sol` — excluded: .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
 - `libraries/library_address_homestead.sol` — excluded: .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
 - `libraries/library_address_via_module.sol` — excluded: .delegatecall: .delegatecall — EVM-only construct, no Soroban mapping
@@ -1543,12 +1364,9 @@ A file with more than one kind of failure is counted in each of its categories.
 - `state/uncalled_blockhash.sol` — excluded: blockhash: blockhash — EVM-only builtin, no Soroban primitive
 - `userDefinedValueType/cleanup.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `userDefinedValueType/cleanup_abicoderv1.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `userDefinedValueType/storage_layout.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `userDefinedValueType/storage_signed.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 - `various/gasleft_decrease.sol` — excluded: gasleft: gasleft — EVM-only builtin, no Soroban primitive
 - `various/selfdestruct.sol` — excluded: selfdestruct: selfdestruct — EVM-only builtin, no Soroban primitive
-- `viaYul/storage/mappings.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
-- `viaYul/unary_operations.sol` — excluded: assembly: assembly — EVM-only construct, no Soroban mapping
 
 </details>
 
@@ -1719,11 +1537,20 @@ A file with more than one kind of failure is counted in each of its categories.
 
 </details>
 
-## Needs review — 17 file(s)
+## Needs review — 37 file(s)
 
 No dictionary rule explains these failures yet. Check each against Solang's Soroban docs; if it is documented or explainable, add a rule to `dictionary/soroban.toml`, otherwise it is a candidate bug.
 
 - `abiEncoderV1/abi_encode_call.sol` — failed at runtime `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiEncoderV2/abi_encode_empty_string_v2.sol` — wrong value `f()`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+- `abiEncoderV2/calldata_overlapped_dynamic_arrays.sol` — wrong value `f_which(uint256[],uint256[2],uint256)`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,… (+1 more)
+- `abiencodedecode/abi_decode_calldata.sol` — failed at runtime `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiencodedecode/abi_decode_simple.sol` — failed at runtime `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiencodedecode/abi_decode_simple_storage.sol` — failed at runtime `f(bytes)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
+- `abiencodedecode/abi_encode_empty_string_v1.sol` — wrong value `f()`: expected [Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…
+- `abiencodedecode/abi_encode_with_signature.sol` — failed at runtime `f0()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f0, Error(Value, InvalidInput) (+3 more)
+- `array/copying/array_copy_including_array.sol` — failed at runtime `clear()`: Error(Context, InvalidAction); log: VM call trapped with HostError, clear, Error(Value, InvalidInput)
+- `array/inline_array_storage_to_memory_conversion_strings.sol` — failed at runtime `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(WasmVm, IndexBounds)
 - `array/memory_arrays_of_various_sizes.sol` — failed at runtime `f(uint256,uint256)`: Error(Context, InvalidAction); log: runtime_error: array index out of bounds in test.sol:6:13-20 (+1 more) [warning: conversion truncates uint256 to uint32, as memory size is type uint32 on target Soroban]
 - `array/push/push_no_args_struct.sol` — failed at runtime `a(uint256)`: Error(Context, InvalidAction); log: VM call trapped with HostError, a, Error(Value, InvalidInput) (+2 more)
 - `array/string_bytes_conversion.sol` — failed at runtime `f(string,uint256)`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput) (+1 more)
@@ -1732,12 +1559,23 @@ No dictionary rule explains these failures yet. Check each against Solang's Soro
 - `constructor_inheritance_init_order.sol` — wrong value `y()`: expected [Int(42)], got Int(0)
 - `events/event_really_really_lots_of_data_from_storage.sol` — failed at runtime `deposit()`: Error(Context, InvalidAction); log: VM call trapped with HostError, deposit, Error(Object, IndexBounds)
 - `freeFunctions/free_namesake_contract_function.sol` — should have reverted `f()`: returned Int(0) instead of reverting [warning: f is already defined as a function]
+- `functionCall/delegatecall_return_value.sol` — failed at runtime `assert0_delegated()`: Error(Context, InvalidAction); log: VM call trapped with HostError, assert0_delegated, Error(Value, InvalidInput) (+5 more)
 - `functionCall/delegatecall_return_value_pre_byzantium.sol` — failed at runtime `assert0_delegated()`: Error(Context, InvalidAction); log: VM call trapped with HostError, assert0_delegated, Error(Value, InvalidInput) (+5 more)
 - `functionCall/inheritance/super_skip_unimplemented_in_interface.sol` — wrong value `f()`: expected [Int(42)], got Int(0)
+- `functionTypes/selector_2.sol` — wrong value `test()`: expected [Bytes([207, 159, 35, 181]), Bytes([125, 239, 180, 16])], got [Bytes([0, 0, 0, 0]), Bytes([0, 0, 0, 0])]
+- `immutable/uninitialized.sol` — failed at runtime `get()`: Error(Context, InvalidAction); log: VM call trapped with HostError, get, Error(Value, InvalidInput)
+- `inlineAssembly/calldata_array_read.sol` — wrong value `f(uint256[2][])`: expected [Int(68), Int(2), Int(132)], got [Int(1048584), Int(2), Int(1048656)]
+- `inlineAssembly/inline_assembly_write_to_stack.sol` — wrong value `f()`: expected [Int(7), Bytes([97, 98, 99, 100, 101, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])], got [Int(7), Bytes([0, 0, 0…
+- `literals/escape.sol` — failed at runtime `f()`: Error(Context, InvalidAction); log: VM call trapped with HostError, f, Error(Value, InvalidInput)
 - `multiSource/free_function_resolution_override_virtual.sol` — wrong value `g()`: expected [Int(1337)], got Int(1338)
 - `multiSource/free_function_resolution_override_virtual_transitive.sol` — wrong value `g()`: expected [Int(1339)], got Int(1337)
 - `state_variables_init_order_3.sol` — wrong value `b_c()`: expected [Int(51)], got Int(126) (+1 more)
+- `strings/empty_storage_string.sol` — wrong value `m()`: expected [Str([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+- `structs/calldata/calldata_struct_with_nested_array_to_memory.sol` — failed at runtime `f(uint32,(uint128,uint256[][2],uint32))`: Error(Context, InvalidAction); log: runtime_error: assert failure in test.sol:14:16-28
 - `structs/delete_struct.sol` — failed at runtime `getTopValue()`: Error(Context, InvalidAction); log: VM call trapped with HostError, getTopValue, Error(Value, InvalidInput) (+5 more)
-- `various/typed_multi_variable_declaration.sol` — wrong value `f()`: expected [Bool(true)], got Bool(false)
+- `using/module_renamed.sol` — wrong value `test(uint256,uint256)`: expected [Int(9), Int(3)], got [Int(3), Int(9)]
+- `variables/delete_locals.sol` — wrong value `delLocal()`: expected [Int(6), Int(7)], got [Int(0), Int(0)] [warning: argument to 'delete' should be storage reference]
+- `viaYul/comparison_functions.sol` — wrong value `equal()`: expected [Bool(true), Bool(false), Bool(false)], got [Bool(false), Bool(false), Bool(false)] (+1 more) [warning: argument to 'delete' should be storage reference]
 - `viaYul/mapping_getters.sol` — wrong value `m2(uint256,uint256)`: expected [Int(35)], got Int(0) (+2 more)
+- `viaYul/tuple_evaluation_order.sol` — failed at runtime `f()`: Error(Context, InvalidAction); log: runtime_error: assert failure in test.sol:7:15-31
 

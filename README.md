@@ -112,17 +112,18 @@ Two checks keep a decoder bug apart from a real solang bug:
 ## Current results
 
 From the last full corpus run (`report/summary.md`, solc **v0.8.22**, 1503 tests,
-10s per test), against solang at
-[`e6289eb`](https://github.com/Islam-Imad/solang/commit/e6289eb708d5cfbe07782dadb9c41c23ba6facfa):
+10s per test), against upstream solang at
+[`6cfa20f`](https://github.com/hyperledger-solang/solang/commit/6cfa20f3e404e215a5636588d8d59b9227ddb25b)
+(*Soroban multiple returns*, #2047):
 
-**Headline:** of **1235** candidates (1503 − 241 filtered − 27 housekeeping),
-**386 (31.3%)** pass; **579** gaps (a checked mismatch/trap, or a clean
-compile-fail on portable source) are solang's TODO list; **209** crashes and
-**22** timeouts (solang should reject cleanly, not abort or hang). Call by call
-across the files that ran: **1387 pass**, **285 fail**, 246 other (skipped /
+**Headline:** of **1243** candidates (1503 − 233 filtered − 27 housekeeping),
+**532 (42.8%)** pass; **425** gaps (a checked mismatch/trap, or a clean
+compile-fail on portable source) are solang's TODO list; **232** crashes and
+**12** timeouts (solang should reject cleanly, not abort or hang). Call by call
+across the files that ran: **1747 pass**, **372 fail**, 297 other (skipped /
 nofaithful / unsupported).
 
-**241** tests are excluded as EVM-only — a source-level AST scan (`src/filter.rs`)
+**233** tests are excluded as EVM-only — a source-level AST scan (`src/filter.rs`)
 drops assembly, `selfdestruct`, `ecrecover`, `tx.origin`, `msg.value`, the
 low-level `.delegatecall` / `.staticcall`, and the `block.*` globals, which the
 Soroban platform can't express, so they aren't counted against solang.
@@ -131,20 +132,22 @@ File-level buckets:
 
 | bucket | files | % | meaning |
 |---|---:|---:|---|
-| `PASS_ALL` | 341 | 22.7% | every checked call passed |
-| `PASS_SOME` | 45 | 3.0% | passed, some calls skipped |
-| `HAS_FAIL` | 112 | 7.5% | a checked mismatch/trap: a real bug |
-| `ONLY_OTHER` | 38 | 2.5% | nothing checkable ran |
-| `GAP` | 467 | 31.1% | clean compile-fail on portable source: a solang gap |
-| `FILTERED` | 241 | 16.0% | compile-fail using an EVM-only feature: excluded |
+| `PASS_ALL` | 470 | 31.3% | every checked call passed |
+| `PASS_SOME` | 62 | 4.1% | passed, some calls skipped |
+| `HAS_FAIL` | 148 | 9.8% | a checked mismatch/trap: a real bug |
+| `ONLY_OTHER` | 41 | 2.7% | nothing checkable ran |
+| `GAP` | 277 | 18.4% | clean compile-fail on portable source: a solang gap |
+| `FILTERED` | 233 | 15.5% | compile-fail using an EVM-only feature: excluded |
 | `UNSUPPORTED` | 1 | 0.1% | unsupported Soroban platform feature |
 | `NO_BLOCK` | 27 | 1.8% | no `// ----` expectations |
-| `CRASH` | 209 | 13.9% | uncatchable abort (caught by isolation) |
-| `TIMEOUT` | 22 | 1.5% | went over the per-test timeout |
+| `CRASH` | 232 | 15.4% | uncatchable abort (caught by isolation) |
+| `TIMEOUT` | 12 | 0.8% | went over the per-test timeout |
 
-The large `GAP` group comes mostly from a few repeated solang gaps: above all
-*"Soroban external functions can return at most one value"* (no multi-return
-support) and internal errors mid-compile. `summary.md` lists every gap, crash,
+The `GAP` group used to be dominated by *"Soroban external functions can
+return at most one value"*; solang now supports multiple returns on Soroban, so
+that cause is gone (467 → 277 GAP files). What remains is spread across many
+smaller causes, led by contract construction, unresolved names and slices (see
+`ledger/gap.md`). `summary.md` lists every gap, crash,
 and timeout (with its reason), plus the exclusion ledger, so gaps can be looked
 at directly.
 
@@ -284,9 +287,9 @@ whose failure is a missing `import` (a `file not found` — sorobench feeds sola
 one source at a time) are grouped under a single **harness** cause and flagged, so
 they never inflate the real solang list. The result lands in `ledger/gap.md`
 (a "major gaps" table + the files under each cause) and the top causes print to
-the console. Today: 467 GAP files → 82 solang root causes + 15 multi-file-import
-files; the biggest by far is *"Soroban external functions can return at most one
-value."*
+the console. Today: 277 GAP files → 81 solang root causes + 15 multi-file-import
+files; the biggest is *"contract construction is not supported for target
+soroban"* (24 files).
 
 ### Your own tests: `custom_tests/`
 
