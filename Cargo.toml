@@ -29,8 +29,8 @@ alloy-primitives = { version = "0.8", optional = true }
 
 # solang = { git = "https://github.com/Islam-Imad/solang", rev = "6bcee2ee2b6ecedf818637c021a8919fa3d1dd87", features = ["soroban"], optional = true }
 # solang-parser = { git = "https://github.com/Islam-Imad/solang", rev = "6bcee2ee2b6ecedf818637c021a8919fa3d1dd87", optional = true }
-solang = { git = "https://github.com/hyperledger-solang/solang", rev = "6cfa20f3e404e215a5636588d8d59b9227ddb25b", features = ["soroban"], optional = true }
-solang-parser = { git = "https://github.com/hyperledger-solang/solang", rev = "6cfa20f3e404e215a5636588d8d59b9227ddb25b", optional = true }
+solang = { git = "https://github.com/hyperledger-solang/solang", rev = "88c70efcac6e1ec09c541fa90054c8b8aa42ba18", features = ["soroban"], optional = true }
+solang-parser = { git = "https://github.com/hyperledger-solang/solang", rev = "88c70efcac6e1ec09c541fa90054c8b8aa42ba18", optional = true }
 
 soroban-sdk = { version = "23.0.0-rc.2.2", features = ["testutils"], optional = true }
 

@@ -4647,7 +4647,7 @@ dependencies = [
 [[package]]
 name = "solang"
 version = "0.4.0"
-source = "git+https://github.com/hyperledger-solang/solang?rev=6cfa20f3e404e215a5636588d8d59b9227ddb25b#6cfa20f3e404e215a5636588d8d59b9227ddb25b"
+source = "git+https://github.com/hyperledger-solang/solang?rev=88c70efcac6e1ec09c541fa90054c8b8aa42ba18#88c70efcac6e1ec09c541fa90054c8b8aa42ba18"
 dependencies = [
  "anchor-syn",
  "ark-bls12-381",
@@ -4740,7 +4740,7 @@ dependencies = [
 [[package]]
 name = "solang-parser"
 version = "0.4.0"
-source = "git+https://github.com/hyperledger-solang/solang?rev=6cfa20f3e404e215a5636588d8d59b9227ddb25b#6cfa20f3e404e215a5636588d8d59b9227ddb25b"
+source = "git+https://github.com/hyperledger-solang/solang?rev=88c70efcac6e1ec09c541fa90054c8b8aa42ba18#88c70efcac6e1ec09c541fa90054c8b8aa42ba18"
 dependencies = [
  "itertools 0.12.1",
  "lalrpop",

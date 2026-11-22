@@ -112,18 +112,18 @@ Two checks keep a decoder bug apart from a real solang bug:
 ## Current results
 
 From the last full corpus run (`report/summary.md`, solc **v0.8.22**, 1503 tests,
-10s per test), against upstream solang at
-[`6cfa20f`](https://github.com/hyperledger-solang/solang/commit/6cfa20f3e404e215a5636588d8d59b9227ddb25b)
-(*Soroban multiple returns*, #2047):
+10s per test, release build), against upstream solang at
+[`88c70ef`](https://github.com/hyperledger-solang/solang/commit/88c70efcac6e1ec09c541fa90054c8b8aa42ba18)
+(*Soroban crash fixes*, #2050):
 
-**Headline:** of **1243** candidates (1503 − 233 filtered − 27 housekeeping),
-**532 (42.8%)** pass; **425** gaps (a checked mismatch/trap, or a clean
-compile-fail on portable source) are solang's TODO list; **232** crashes and
-**12** timeouts (solang should reject cleanly, not abort or hang). Call by call
-across the files that ran: **1747 pass**, **372 fail**, 297 other (skipped /
+**Headline:** of **1248** candidates (1503 − 228 filtered − 27 housekeeping),
+**583 (46.7%)** pass; **461** gaps (a checked mismatch/trap, or a clean
+compile-fail on portable source) are solang's TODO list; **138** crashes and
+**3** timeouts (solang should reject cleanly, not abort or hang). Call by call
+across the files that ran: **1984 pass**, **618 fail**, 417 other (skipped /
 nofaithful / unsupported).
 
-**233** tests are excluded as EVM-only — a source-level AST scan (`src/filter.rs`)
+**228** tests are excluded as EVM-only — a source-level AST scan (`src/filter.rs`)
 drops assembly, `selfdestruct`, `ecrecover`, `tx.origin`, `msg.value`, the
 low-level `.delegatecall` / `.staticcall`, and the `block.*` globals, which the
 Soroban platform can't express, so they aren't counted against solang.
@@ -132,22 +132,23 @@ File-level buckets:
 
 | bucket | files | % | meaning |
 |---|---:|---:|---|
-| `PASS_ALL` | 470 | 31.3% | every checked call passed |
-| `PASS_SOME` | 62 | 4.1% | passed, some calls skipped |
-| `HAS_FAIL` | 148 | 9.8% | a checked mismatch/trap: a real bug |
-| `ONLY_OTHER` | 41 | 2.7% | nothing checkable ran |
-| `GAP` | 277 | 18.4% | clean compile-fail on portable source: a solang gap |
-| `FILTERED` | 233 | 15.5% | compile-fail using an EVM-only feature: excluded |
+| `PASS_ALL` | 514 | 34.2% | every checked call passed |
+| `PASS_SOME` | 69 | 4.6% | passed, some calls skipped |
+| `HAS_FAIL` | 171 | 11.4% | a checked mismatch/trap: a real bug |
+| `ONLY_OTHER` | 62 | 4.1% | nothing checkable ran |
+| `GAP` | 290 | 19.3% | clean compile-fail on portable source: a solang gap |
+| `FILTERED` | 228 | 15.2% | compile-fail using an EVM-only feature: excluded |
 | `UNSUPPORTED` | 1 | 0.1% | unsupported Soroban platform feature |
 | `NO_BLOCK` | 27 | 1.8% | no `// ----` expectations |
-| `CRASH` | 232 | 15.4% | uncatchable abort (caught by isolation) |
-| `TIMEOUT` | 12 | 0.8% | went over the per-test timeout |
+| `CRASH` | 138 | 9.2% | uncatchable abort (caught by isolation) |
+| `TIMEOUT` | 3 | 0.2% | went over the per-test timeout |
 
 The `GAP` group used to be dominated by *"Soroban external functions can
 return at most one value"*; solang now supports multiple returns on Soroban, so
-that cause is gone (467 → 277 GAP files). What remains is spread across many
-smaller causes, led by contract construction, unresolved names and slices (see
-`ledger/gap.md`). `summary.md` lists every gap, crash,
+that cause is gone (467 → 277 GAP files). #2050 then turned many crashes into
+clean errors or running tests (crashes 233 → 138), which moved some files into
+`GAP`. What remains is spread across many smaller causes, led by contract
+construction, unresolved names and slices (see `ledger/gap.md`). `summary.md` lists every gap, crash,
 and timeout (with its reason), plus the exclusion ledger, so gaps can be looked
 at directly.
 
@@ -158,7 +159,9 @@ at directly.
 > *bridgeable* tests (category B, on the roadmap) from real gaps (category C) is
 > what remains.
 
-Regenerate the report any time with `cargo run -- run-all`.
+Regenerate the report any time with `cargo run --release -- run-all`. Use the
+release build: in a debug build a few slow tests can cross the 10s timeout
+depending on machine load, which makes results flip between runs.
 
 ---
 
@@ -231,8 +234,8 @@ running each test on its own keeps one bad test from killing the batch of 1500. 
 stuck compile is killed after the fixed **10s** per-test timeout.
 
 ```console
-$ cargo run -- run-all                    # the pinned solc v0.8.22 corpus
-$ cargo run -- run-all path/to/dir        # any dir, 10s/test
+$ cargo run --release -- run-all          # the pinned solc v0.8.22 corpus
+$ cargo run --release -- run-all path/to/dir   # any dir, 10s/test
 ```
 
 Two files land in `report/`:
@@ -287,9 +290,9 @@ whose failure is a missing `import` (a `file not found` — sorobench feeds sola
 one source at a time) are grouped under a single **harness** cause and flagged, so
 they never inflate the real solang list. The result lands in `ledger/gap.md`
 (a "major gaps" table + the files under each cause) and the top causes print to
-the console. Today: 277 GAP files → 81 solang root causes + 15 multi-file-import
+the console. Today: 290 GAP files → 81 solang root causes + 15 multi-file-import
 files; the biggest is *"contract construction is not supported for target
-soroban"* (24 files).
+soroban"* (37 files).
 
 ### Your own tests: `custom_tests/`
 
